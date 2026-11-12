@@ -1,0 +1,181 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/geist-mono';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-inter);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-success-text: var(--success-text);
+  --color-warning-text: var(--warning-text);
+  --color-danger-text: var(--danger-text);
+  --color-info-text: var(--info-text);
+  --color-elevated: var(--elevated);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * Design tokens. Every colour used by components comes from here.
+ * --primary is the single brand accent; swap it to rebrand.
+ */
+:root {
+  /* Self-hosted fonts (next/font did this before). */
+  --font-inter: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-geist-mono: 'Geist Mono Variable', ui-monospace, monospace;
+  --radius: 0.5rem;
+
+  --background: #f7f8fa;
+  --foreground: #1f2329;
+  --card: #ffffff;
+  --card-foreground: #1f2329;
+  --popover: #ffffff;
+  --popover-foreground: #1f2329;
+  --elevated: #f2f3f5;
+
+  --primary: #ffa116;
+  --primary-foreground: #1a1a1a;
+  --secondary: #f2f3f5;
+  --secondary-foreground: #1f2329;
+  --muted: #f2f3f5;
+  --muted-foreground: #6b7280;
+  --accent: #f2f3f5;
+  --accent-foreground: #1f2329;
+
+  --success: #00b8a3;
+  --warning: #ffc01e;
+  --destructive: #ff375f;
+  --info: #3b82f6;
+
+  /* Readable text colours for tinted badges */
+  --success-text: #00806f;
+  --warning-text: #a15c00;
+  --danger-text: #d91a43;
+  --info-text: #1d4ed8;
+
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #ffa116;
+
+  --chart-1: #c97400; /* accent step validated for marks on light surfaces */
+  --chart-2: #00b8a3;
+  --chart-3: #3b82f6;
+  --chart-4: #ff375f;
+  --chart-5: #a855f7;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1f2329;
+  --sidebar-primary: #ffa116;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #f2f3f5;
+  --sidebar-accent-foreground: #1f2329;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #ffa116;
+}
+
+.dark {
+  --background: #1a1a1a;
+  --foreground: #eff1f6;
+  --card: #282828;
+  --card-foreground: #eff1f6;
+  --popover: #303030;
+  --popover-foreground: #eff1f6;
+  --elevated: #303030;
+
+  --primary: #ffa116;
+  --primary-foreground: #1a1a1a;
+  --secondary: #303030;
+  --secondary-foreground: #eff1f6;
+  --muted: #303030;
+  --muted-foreground: #9ca3af;
+  --accent: #333333;
+  --accent-foreground: #eff1f6;
+
+  --success: #00b8a3;
+  --warning: #ffc01e;
+  --destructive: #ff375f;
+  --info: #60a5fa;
+
+  --success-text: #2cd3bf;
+  --warning-text: #ffc01e;
+  --danger-text: #ff6b87;
+  --info-text: #93c5fd;
+
+  --border: #3a3a3a;
+  --input: #3a3a3a;
+  --ring: #ffa116;
+
+  --chart-1: #d07a00; /* accent step validated for marks on dark surfaces */
+  --chart-2: #00b8a3;
+  --chart-3: #60a5fa;
+  --chart-4: #ff375f;
+  --chart-5: #c084fc;
+
+  --sidebar: #212121;
+  --sidebar-foreground: #eff1f6;
+  --sidebar-primary: #ffa116;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #303030;
+  --sidebar-accent-foreground: #eff1f6;
+  --sidebar-border: #3a3a3a;
+  --sidebar-ring: #ffa116;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-sm text-foreground antialiased;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
