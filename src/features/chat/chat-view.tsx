@@ -115,7 +115,12 @@ export function ChatView({ bookingId }: { bookingId: string }) {
     if (!thread.data) return;
     void api
       .markThreadRead(bookingId)
-      .then(() => queryClient.invalidateQueries({ queryKey: pujaKeys.bookings() }))
+      .then(() =>
+        Promise.all([
+          queryClient.invalidateQueries({ queryKey: pujaKeys.bookings() }),
+          queryClient.invalidateQueries({ queryKey: pujaKeys.threads() }),
+        ]),
+      )
       .catch(() => undefined);
   }, [thread.data, bookingId, queryClient]);
 

@@ -52,13 +52,13 @@ function UserHome() {
     <NavPage>
       <header className="bg-gradient-to-b from-primary/20 to-background px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-3">
         <p className="text-xs text-muted-foreground">Namaste{me?.name ? `, ${me.name.split(' ')[0]}` : ''}</p>
-        <h1 className="text-xl font-semibold">Book a puja</h1>
+        <h1 className="text-xl font-semibold">Book a pooja</h1>
         <div className="relative mt-3">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Search pujas"
+            placeholder="Search poojas"
             className="h-10 bg-card pl-9"
             maxLength={80}
           />
@@ -92,7 +92,7 @@ function UserHome() {
         ) : items.length === 0 ? (
           <EmptyState
             icon={Sparkles}
-            title={q ? 'No puja matches your search' : 'No pujas here yet'}
+            title={q ? 'No pooja matches your search' : 'No poojas here yet'}
             description="Try another category or search."
           />
         ) : (

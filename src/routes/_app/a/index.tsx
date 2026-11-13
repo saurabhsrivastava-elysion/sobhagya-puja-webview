@@ -19,7 +19,7 @@ function AstrologerBookings() {
   const me = useMe().data;
   return (
     <NavPage>
-      <PageHeader title="Puja bookings" subtitle={me?.name ? `Namaste, ${me.name}` : undefined} />
+      <PageHeader title="Pooja bookings" subtitle={me?.name ? `Namaste, ${me.name}` : undefined} />
       <BookingTabs
         role="astrologer"
         tab={tab}

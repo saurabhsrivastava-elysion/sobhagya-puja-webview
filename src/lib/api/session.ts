@@ -26,7 +26,7 @@ const listeners = new Set<(state: SessionState) => void>();
 
 export class SessionExpiredError extends Error {
   constructor() {
-    super('Your session has ended. Please open Puja again from the Sobhagya app.');
+    super('Your session has ended. Please open Pooja again from the Sobhagya app.');
     this.name = 'SessionExpiredError';
   }
 }

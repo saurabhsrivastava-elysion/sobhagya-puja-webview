@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { BookingStatusBadge, outcomeLabel } from '@/features/puja/components/booking-status';
 import { PersonAvatar } from '@/features/puja/components/person';
 import { ReasonDialog } from '@/features/puja/components/reason-dialog';
+import { ReasonSelectDialog } from '@/features/puja/components/reason-select-dialog';
+import { ASTROLOGER_CANCEL_REASONS, DECLINE_REASONS } from '@/features/puja/decline-reasons';
 import { usePartnerBookingAction, useUserBookingAction } from '@/features/puja/hooks';
 import { pujaQueries } from '@/features/puja/queries';
 import { CHAT_VISIBLE, CHAT_WRITABLE, type Booking } from '@/features/puja/schemas';
@@ -92,7 +94,7 @@ export function BookingDetail({ role, id }: { role: Role; id: string }) {
 
         {b.userDetails && (
           <section className="flex flex-col gap-1.5 rounded-xl border bg-card p-3 text-[13px]">
-            <h3 className="font-medium">Puja details</h3>
+            <h3 className="font-medium">Pooja details</h3>
             <Detail label="Name">{b.userDetails.name}</Detail>
             <Detail label="Gotra">{b.userDetails.gotra}</Detail>
             <Detail label="Date of birth">{b.userDetails.dateOfBirth}</Detail>
@@ -174,15 +176,15 @@ function StatusNote({ booking: b, role }: { booking: Booking; role: Role }) {
       ? {
           PAYMENT_PENDING: 'We are confirming your payment. This usually takes a moment.',
           PENDING: `Waiting for the astrologer to accept${b.acceptDeadline ? ` (by ${formatDateTime(b.acceptDeadline)})` : ''}. You get a full refund if they don’t.`,
-          CONFIRMED: 'Confirmed. You can chat with your astrologer before the puja.',
-          LIVE: 'Your puja is in progress.',
-          MARKED_DONE: `The astrologer has marked the puja as done. Please confirm, or report a problem${b.autoCompleteAt ? ` before ${formatDateTime(b.autoCompleteAt)}` : ''}.`,
+          CONFIRMED: 'Confirmed. You can chat with your astrologer before the pooja.',
+          LIVE: 'Your pooja is in progress.',
+          MARKED_DONE: `The astrologer has marked the pooja as done. Please confirm, or report a problem${b.autoCompleteAt ? ` before ${formatDateTime(b.autoCompleteAt)}` : ''}.`,
           DISPUTED: 'Sobhagya is reviewing this booking and will get back to you.',
         }
       : {
           PENDING: `New request. Accept${b.acceptDeadline ? ` by ${formatDateTime(b.acceptDeadline)}` : ''}, or it is refunded to the user.`,
-          CONFIRMED: 'Confirmed. The puja starts at the booked time.',
-          LIVE: 'In progress. Mark it done when the puja is complete.',
+          CONFIRMED: 'Confirmed. The pooja starts at the booked time.',
+          LIVE: 'In progress. Mark it done when the pooja is complete.',
           MARKED_DONE: 'Waiting for the user to confirm. It completes automatically if they don’t respond.',
           DISPUTED: 'Sobhagya is reviewing this booking.',
         };
@@ -252,7 +254,7 @@ function UserActions({ booking: b }: { booking: Booking }) {
       {b.status === 'MARKED_DONE' && (
         <>
           <Button className="h-11" onClick={() => setDialog('confirm')}>
-            Confirm puja completed
+            Confirm pooja completed
           </Button>
           <Button variant="outline" className="h-11" onClick={() => setDialog('dispute')}>
             Report a problem
@@ -288,7 +290,7 @@ function UserActions({ booking: b }: { booking: Booking }) {
       <ConfirmDialog
         open={dialog === 'confirm'}
         onOpenChange={(o) => !o && close()}
-        title="Was your puja completed?"
+        title="Was your pooja completed?"
         description="Confirming releases the payment to the astrologer."
         confirmLabel="Yes, completed"
         pending={action.isPending}
@@ -351,7 +353,7 @@ function AstrologerActions({ booking: b }: { booking: Booking }) {
       )}
       {b.status === 'LIVE' && (
         <Button className="h-11" onClick={() => setDialog('markDone')}>
-          Mark puja as done
+          Mark pooja as done
         </Button>
       )}
       {(b.status === 'CONFIRMED' || b.status === 'LIVE') && (
@@ -364,41 +366,39 @@ function AstrologerActions({ booking: b }: { booking: Booking }) {
         open={dialog === 'accept'}
         onOpenChange={(o) => !o && close()}
         title="Accept this booking?"
-        description={`You will perform ${b.puja?.name || 'the puja'} on ${formatSlot(b.slotStart)}.`}
+        description={`You will perform ${b.puja?.name || 'the pooja'} on ${formatSlot(b.slotStart)}.`}
         confirmLabel="Accept"
         pending={action.isPending}
         onConfirm={() => action.mutate({ type: 'accept', id: b.id }, { onSuccess: close })}
       />
-      <ReasonDialog
+      <ReasonSelectDialog
         open={dialog === 'reject'}
         onOpenChange={(o) => !o && close()}
         title="Decline this booking?"
-        description="The user gets a full refund."
+        description="Choose a reason. The user gets a full refund."
         confirmLabel="Decline"
-        required
-        destructive
+        reasons={DECLINE_REASONS}
         pending={action.isPending}
         onConfirm={(reason) => action.mutate({ type: 'reject', id: b.id, reason }, { onSuccess: close })}
       />
-      <ReasonDialog
+      <ReasonSelectDialog
         open={dialog === 'cancel'}
         onOpenChange={(o) => !o && close()}
         title="Cancel this booking?"
         description={
           b.status === 'LIVE'
-            ? 'The puja has started, so Sobhagya will review the cancellation.'
-            : 'The user gets a full refund. Cancellations affect your reliability.'
+            ? 'Choose a reason. The pooja has started, so Sobhagya will review the cancellation.'
+            : 'Choose a reason. The user gets a full refund. Cancellations affect your reliability.'
         }
         confirmLabel="Cancel booking"
-        required
-        destructive
+        reasons={ASTROLOGER_CANCEL_REASONS}
         pending={action.isPending}
         onConfirm={(reason) => action.mutate({ type: 'cancel', id: b.id, reason }, { onSuccess: close })}
       />
       <ReasonDialog
         open={dialog === 'markDone'}
         onOpenChange={(o) => !o && close()}
-        title="Mark the puja as done?"
+        title="Mark the pooja as done?"
         description="The user will be asked to confirm."
         confirmLabel="Mark done"
         placeholder="A note for the user (optional)"

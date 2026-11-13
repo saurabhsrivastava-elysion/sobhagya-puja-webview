@@ -22,6 +22,7 @@ export const pujaKeys = {
   catalogue: () => [...pujaKeys.all, 'catalogue'] as const,
   calendar: (from: string, to: string) => [...pujaKeys.all, 'calendar', from, to] as const,
   calendars: () => [...pujaKeys.all, 'calendar'] as const,
+  threads: () => [...pujaKeys.all, 'threads'] as const,
   thread: (id: string) => [...pujaKeys.all, 'thread', id] as const,
   messages: (id: string) => [...pujaKeys.all, 'messages', id] as const,
 };

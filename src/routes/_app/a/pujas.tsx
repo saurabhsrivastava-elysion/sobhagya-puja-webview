@@ -45,14 +45,14 @@ function MyPujas() {
 
   return (
     <NavPage>
-      <PageHeader title="My pujas" subtitle="Apply for the pujas you perform" />
+      <PageHeader title="My poojas" subtitle="Apply for the poojas you perform" />
       <section className="flex flex-col gap-3 p-4">
         {catalogue.isPending ? (
           <ListSkeleton />
         ) : catalogue.isError ? (
           <QueryError error={catalogue.error} onRetry={() => void catalogue.refetch()} />
         ) : items.length === 0 ? (
-          <EmptyState icon={Flower2} title="No pujas are open yet" />
+          <EmptyState icon={Flower2} title="No poojas are open yet" />
         ) : (
           items.map((item) => {
             const app = item.application;
@@ -147,7 +147,7 @@ function ApplicationForm({ item, onClose }: { item: CatalogueItem; onClose: () =
         <DialogDescription>{item.name}. Sobhagya reviews every application.</DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-3">
-        <FormField label="Your experience with this puja">
+        <FormField label="Your experience with this pooja">
           <Textarea
             rows={3}
             maxLength={2000}
