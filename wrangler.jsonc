@@ -1,0 +1,15 @@
+{
+  // Cloudflare Worker for the puja webview. `pnpm build:cf` builds it with Nitro's cloudflare-module
+  // preset, which adds `main` and `assets` and writes the final config to .output/server/wrangler.json;
+  // wrangler picks that up through .wrangler/deploy/config.json.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sobhagya-puja-webview",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // Request logs and errors under Workers > sobhagya-puja-webview > Logs.
+  "observability": { "enabled": true },
+  // Deploys to sobhagya-puja-webview.<account>.workers.dev. For a custom domain (the sobhagya.in zone is
+  // on Cloudflare), add e.g. "routes": [{ "pattern": "puja.sobhagya.in", "custom_domain": true }] and set
+  // WEBVIEW_PUJA_BASE_URL to that origin in auth-service, puja-service and calling-service.
+  "workers_dev": true
+}
