@@ -21,7 +21,7 @@ export function BookingCard({ booking, role }: { booking: Booking; role: 'user' 
       <PersonAvatar name={other.name} src={other.avatar} className="size-12" />
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="truncate font-medium">{booking.puja?.name || 'Puja'}</p>
+          <p className="truncate font-medium">{booking.puja?.name || 'Pooja'}</p>
           <BookingStatusBadge status={booking.status} role={role} />
         </div>
         <p className="truncate text-xs text-muted-foreground">

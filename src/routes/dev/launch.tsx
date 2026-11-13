@@ -83,7 +83,7 @@ function DevLaunch() {
           Dev launcher
         </h1>
         <p className="mt-1 text-[13px] text-muted-foreground">
-          Opens Puja the way the Sobhagya app does. Get tokens with{' '}
+          Opens Pooja the way the Sobhagya app does. Get tokens with{' '}
           <code className="rounded bg-muted px-1">node scripts/dev-tokens.mjs</code> in auth-service. A user
           opens the user side, an astrologer (role friend) the astrologer side.
         </p>
@@ -117,7 +117,7 @@ function DevLaunch() {
         onClick={() => void launch()}
       >
         {busy && <Loader2 className="animate-spin" />}
-        Open Puja as this account
+        Open Pooja as this account
       </Button>
     </main>
   );

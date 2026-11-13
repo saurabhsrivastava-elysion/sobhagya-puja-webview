@@ -62,6 +62,9 @@ importers:
       react-hook-form:
         specifier: ^7.91.0
         version: 7.91.0(@types/react@19.3.0)(react@19.3.0)
+      react-mobile-picker:
+        specifier: 1.2.0
+        version: 1.2.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       socket.io-client:
         specifier: ^4.8.4
         version: 4.8.4
@@ -2763,6 +2766,12 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  react-mobile-picker@1.2.0:
+    resolution: {integrity: sha512-utIgq/rqJfDw+qL3CA6j5e3JqlAoc1kHucJi2vNiwspjaa1XJurJN/FKWBSgui1wV0gzS0BYutd2CbwcyR2eDA==}
+    peerDependencies:
+      react: ^18 || ^19
+      react-dom: ^18 || ^19
 
   react-remove-scroll-bar@2.3.8:
     resolution: {integrity: sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q==}
@@ -5876,6 +5885,11 @@ snapshots:
       react: 19.3.0
     optionalDependencies:
       '@types/react': 19.3.0
+
+  react-mobile-picker@1.2.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
+    dependencies:
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
 
   react-remove-scroll-bar@2.3.8(@types/react@19.3.0)(react@19.3.0):
     dependencies:

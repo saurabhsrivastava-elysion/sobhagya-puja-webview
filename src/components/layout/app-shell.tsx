@@ -26,7 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     return (
       <FullScreen>
         <Loader2 className="size-6 animate-spin text-primary" />
-        <p className="text-muted-foreground">Opening Puja…</p>
+        <p className="text-muted-foreground">Opening Pooja…</p>
       </FullScreen>
     );
   }
@@ -34,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (me.isError) {
     return (
       <FullScreen>
-        <p className="font-medium">Puja could not be opened</p>
+        <p className="font-medium">Pooja could not be opened</p>
         <p className="max-w-xs text-muted-foreground">{errorMessage(me.error)}</p>
         <Button variant="outline" onClick={() => void queryClient.resetQueries({ queryKey: ['puja', 'me'] })}>
           <RotateCcw />
@@ -53,7 +53,7 @@ function SessionExpired() {
       <img src="/sobhagya-logo.svg" alt="" className="size-12" />
       <p className="text-base font-semibold">Your session has ended</p>
       <p className="max-w-xs text-muted-foreground">
-        For your security, Puja signs you out after an hour. Close this screen and open Puja again from the
+        For your security, Pooja signs you out after an hour. Close this screen and open Pooja again from the
         Sobhagya app.
       </p>
       {devLauncherEnabled() && (

@@ -21,6 +21,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ListSkeleton } from '@/features/puja/components/lists';
+import { WheelTimeField } from '@/features/puja/components/wheel-time-field';
 import { useCreatePattern, useCreateWindow, useDeleteWindow } from '@/features/puja/hooks';
 import { pujaQueries } from '@/features/puja/queries';
 import { formatDay, formatTime, shiftDateKey, toDateKey, todayKey } from '@/lib/format';
@@ -67,7 +68,7 @@ function Availability() {
 
   return (
     <NavPage>
-      <PageHeader title="Availability" subtitle="When you are free to perform pujas (IST)" />
+      <PageHeader title="Availability" subtitle="When you are free to perform poojas (IST)" />
       <div className="grid grid-cols-2 gap-2 p-4 pb-0">
         <Button variant="outline" className="h-11" onClick={() => setDialog('single')}>
           <CalendarPlus />
@@ -81,7 +82,7 @@ function Availability() {
       {calendar.data && (
         <p className="px-4 pt-2 text-xs text-muted-foreground">
           Users can book start times inside your free time.{' '}
-          {calendar.data.gapMinutes ? `${calendar.data.gapMinutes} min are kept free after each puja.` : ''}
+          {calendar.data.gapMinutes ? `${calendar.data.gapMinutes} min are kept free after each pooja.` : ''}
         </p>
       )}
 
@@ -94,7 +95,7 @@ function Availability() {
           <EmptyState
             icon={CalendarClock}
             title="No free time added"
-            description="Add the times you can perform pujas so users can book you."
+            description="Add the times you can perform poojas so users can book you."
           />
         ) : (
           days.map(([key, day]) => (
@@ -126,7 +127,7 @@ function Availability() {
                 ))}
                 {day.bookings.map((b) => (
                   <li key={b.bookingId} className="rounded-lg bg-primary/10 px-2 py-1.5 text-[13px]">
-                    <span className="font-medium">{b.pujaName || 'Puja'}</span> · {formatTime(b.startTime)} –{' '}
+                    <span className="font-medium">{b.pujaName || 'Pooja'}</span> · {formatTime(b.startTime)} –{' '}
                     {formatTime(b.endTime)}
                     {b.userName && <span className="text-muted-foreground"> · {b.userName}</span>}
                   </li>
@@ -143,7 +144,7 @@ function Availability() {
         open={deleting !== null}
         onOpenChange={(o) => !o && setDeleting(null)}
         title="Remove this free time?"
-        description={`${deleting?.label ?? ''}. Pujas already booked in it stay booked.`}
+        description={`${deleting?.label ?? ''}. Poojas already booked in it stay booked.`}
         confirmLabel="Remove"
         destructive
         pending={remove.isPending}
@@ -180,10 +181,10 @@ function SingleWindowDialog({ open, onClose }: { open: boolean; onClose: () => v
           </FormField>
           <div className="grid grid-cols-2 gap-3">
             <FormField label="From">
-              <Input type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+              <WheelTimeField value={start} onChange={setStart} />
             </FormField>
             <FormField label="To">
-              <Input type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+              <WheelTimeField value={end} onChange={setEnd} />
             </FormField>
           </div>
         </div>
@@ -269,10 +270,10 @@ function PatternDialog({ open, onClose }: { open: boolean; onClose: () => void }
           </FormField>
           <div className="grid grid-cols-2 gap-3">
             <FormField label="From">
-              <Input type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+              <WheelTimeField value={start} onChange={setStart} />
             </FormField>
             <FormField label="To">
-              <Input type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+              <WheelTimeField value={end} onChange={setEnd} />
             </FormField>
           </div>
         </div>
