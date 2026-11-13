@@ -1,0 +1,8 @@
+node_modules
+.output
+.nitro
+.tanstack
+dist
+pnpm-lock.yaml
+src/components/ui
+src/routeTree.gen.ts
