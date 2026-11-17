@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { DobPicker } from '@/features/puja/components/dob-picker';
+import { GotraPicker } from '@/features/puja/components/gotra-picker';
 import { PersonAvatar } from '@/features/puja/components/person';
 import { useCreateBooking, useMe } from '@/features/puja/hooks';
 import { pujaKeys, pujaQueries } from '@/features/puja/queries';
@@ -103,7 +105,7 @@ function BookPuja() {
 
   return (
     <div className="mx-auto w-full max-w-md pb-28">
-      <PageHeader title="Book puja" subtitle={puja.data?.name} backTo={`/u/pujas/${pujaId}`} />
+      <PageHeader title="Book pooja" subtitle={puja.data?.name} backTo={`/u/pujas/${pujaId}`} />
 
       <section className="flex items-center gap-3 border-b p-4">
         <PersonAvatar name={astrologer?.name} src={astrologer?.avatar} className="size-12" />
@@ -176,7 +178,7 @@ function BookPuja() {
       </section>
 
       <section className="flex flex-col gap-3 border-t p-4">
-        <h2 className="font-semibold">Puja details</h2>
+        <h2 className="font-semibold">Pooja details</h2>
         <Field label="Name for the sankalp *">
           <Input
             value={details.name}
@@ -187,18 +189,12 @@ function BookPuja() {
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Gotra">
-            <Input
-              value={details.gotra}
-              onChange={(e) => setDetails({ ...details, gotra: e.target.value })}
-              maxLength={120}
-            />
+            <GotraPicker value={details.gotra} onChange={(gotra) => setDetails({ ...details, gotra })} />
           </Field>
           <Field label="Date of birth">
-            <Input
+            <DobPicker
               value={details.dateOfBirth}
-              onChange={(e) => setDetails({ ...details, dateOfBirth: e.target.value })}
-              maxLength={40}
-              placeholder="DD/MM/YYYY"
+              onChange={(dateOfBirth) => setDetails({ ...details, dateOfBirth })}
             />
           </Field>
         </div>
@@ -208,7 +204,7 @@ function BookPuja() {
             onChange={(e) => setDetails({ ...details, sankalp: e.target.value })}
             maxLength={1000}
             rows={3}
-            placeholder="What would you like the puja performed for?"
+            placeholder="What would you like the pooja performed for?"
           />
         </Field>
         {lowBalance && (

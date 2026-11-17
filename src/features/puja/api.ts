@@ -196,6 +196,15 @@ export function deleteWindow(id: string) {
 
 /* ---- Chat ---- */
 
+/** The signed-in user's pooja chats, newest message first; pass the last one's `updatedAt` for the next page. */
+export async function listThreads(lastTimeStamp?: string, limit = 20) {
+  const res = await http('/api/chat/threads', {
+    schema: apiEnvelope(z.array(threadSchema)),
+    searchParams: { lastTimeStamp, limit },
+  });
+  return res.data ?? [];
+}
+
 export async function getThread(threadId: string) {
   const res = await http(`/api/chat/thread/${threadId}`, { schema: apiEnvelope(threadSchema) });
   return required(res.data, 'chat');

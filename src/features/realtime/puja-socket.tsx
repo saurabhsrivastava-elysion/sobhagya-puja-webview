@@ -53,6 +53,11 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       }, 2_000);
     });
 
+    // A new message in any of this person's chats: refresh the Chats list (last message, unread count).
+    socket.on('thread_updated', () => {
+      void queryClient.invalidateQueries({ queryKey: pujaKeys.threads() });
+    });
+
     // Status changes from either side or a timer: refresh what shows the booking.
     socket.on('booking_updated', (payload: unknown) => {
       const parsed = bookingSchema.safeParse(payload);

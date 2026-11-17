@@ -22,6 +22,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         content: 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover',
       },
       { name: 'robots', content: 'noindex, nofollow' },
+      // Always light: stops the WebView from following (or auto-applying) the phone's dark mode.
+      { name: 'color-scheme', content: 'light only' },
       { title: APP_NAME },
     ],
     links: [

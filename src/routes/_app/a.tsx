@@ -1,5 +1,5 @@
 import { createFileRoute, Navigate, Outlet } from '@tanstack/react-router';
-import { CalendarClock, ClipboardList, Flower2 } from 'lucide-react';
+import { CalendarClock, ClipboardList, Flower2, MessagesSquare } from 'lucide-react';
 
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { useMe } from '@/features/puja/hooks';
@@ -19,8 +19,9 @@ function AstrologerLayout() {
       <BottomNav
         items={[
           { to: '/a', label: 'Bookings', icon: ClipboardList, exact: true },
+          { to: '/a/chats', label: 'Chats', icon: MessagesSquare },
           { to: '/a/availability', label: 'Availability', icon: CalendarClock },
-          { to: '/a/pujas', label: 'My pujas', icon: Flower2 },
+          { to: '/a/pujas', label: 'My poojas', icon: Flower2 },
         ]}
       />
     </>

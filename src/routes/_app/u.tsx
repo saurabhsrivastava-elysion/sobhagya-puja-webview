@@ -1,5 +1,5 @@
 import { createFileRoute, Navigate, Outlet, useMatchRoute } from '@tanstack/react-router';
-import { CalendarCheck, Sparkles } from 'lucide-react';
+import { CalendarCheck, MessagesSquare, Sparkles } from 'lucide-react';
 
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { useMe } from '@/features/puja/hooks';
@@ -22,7 +22,8 @@ function UserLayout() {
       {!hideNav && (
         <BottomNav
           items={[
-            { to: '/u', label: 'Pujas', icon: Sparkles, exact: true },
+            { to: '/u', label: 'Poojas', icon: Sparkles, exact: true },
+            { to: '/u/chats', label: 'Chats', icon: MessagesSquare },
             { to: '/u/bookings', label: 'My bookings', icon: CalendarCheck },
           ]}
         />

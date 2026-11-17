@@ -16,10 +16,12 @@ import { Route as AppURouteImport } from './routes/_app/u'
 import { Route as DevLaunchRouteImport } from './routes/dev/launch'
 import { Route as AppAIndexRouteImport } from './routes/_app/a/index'
 import { Route as AppAAvailabilityRouteImport } from './routes/_app/a/availability'
+import { Route as AppAChatsRouteImport } from './routes/_app/a/chats'
 import { Route as AppAPujasRouteImport } from './routes/_app/a/pujas'
 import { Route as AppCallBookingIdRouteImport } from './routes/_app/call/$bookingId'
 import { Route as AppChatBookingIdRouteImport } from './routes/_app/chat/$bookingId'
 import { Route as AppUIndexRouteImport } from './routes/_app/u/index'
+import { Route as AppUChatsRouteImport } from './routes/_app/u/chats'
 import { Route as AppABookingsIdRouteImport } from './routes/_app/a/bookings/$id'
 import { Route as AppUBookingsIndexRouteImport } from './routes/_app/u/bookings/index'
 import { Route as AppUBookingsIdRouteImport } from './routes/_app/u/bookings/$id'
@@ -60,6 +62,11 @@ const AppAAvailabilityRoute = AppAAvailabilityRouteImport.update({
   path: '/availability',
   getParentRoute: () => AppARoute,
 } as any)
+const AppAChatsRoute = AppAChatsRouteImport.update({
+  id: '/chats',
+  path: '/chats',
+  getParentRoute: () => AppARoute,
+} as any)
 const AppAPujasRoute = AppAPujasRouteImport.update({
   id: '/pujas',
   path: '/pujas',
@@ -78,6 +85,11 @@ const AppChatBookingIdRoute = AppChatBookingIdRouteImport.update({
 const AppUIndexRoute = AppUIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppURoute,
+} as any)
+const AppUChatsRoute = AppUChatsRouteImport.update({
+  id: '/chats',
+  path: '/chats',
   getParentRoute: () => AppURoute,
 } as any)
 const AppABookingsIdRoute = AppABookingsIdRouteImport.update({
@@ -113,9 +125,11 @@ export interface FileRoutesByFullPath {
   '/u': typeof AppURouteWithChildren
   '/dev/launch': typeof DevLaunchRoute
   '/a/availability': typeof AppAAvailabilityRoute
+  '/a/chats': typeof AppAChatsRoute
   '/a/pujas': typeof AppAPujasRoute
   '/call/$bookingId': typeof AppCallBookingIdRoute
   '/chat/$bookingId': typeof AppChatBookingIdRoute
+  '/u/chats': typeof AppUChatsRoute
   '/a/': typeof AppAIndexRoute
   '/u/': typeof AppUIndexRoute
   '/a/bookings/$id': typeof AppABookingsIdRoute
@@ -128,9 +142,11 @@ export interface FileRoutesByTo {
   '/dev/launch': typeof DevLaunchRoute
   '/': typeof AppIndexRoute
   '/a/availability': typeof AppAAvailabilityRoute
+  '/a/chats': typeof AppAChatsRoute
   '/a/pujas': typeof AppAPujasRoute
   '/call/$bookingId': typeof AppCallBookingIdRoute
   '/chat/$bookingId': typeof AppChatBookingIdRoute
+  '/u/chats': typeof AppUChatsRoute
   '/a': typeof AppAIndexRoute
   '/u': typeof AppUIndexRoute
   '/a/bookings/$id': typeof AppABookingsIdRoute
@@ -147,9 +163,11 @@ export interface FileRoutesById {
   '/dev/launch': typeof DevLaunchRoute
   '/_app/': typeof AppIndexRoute
   '/_app/a/availability': typeof AppAAvailabilityRoute
+  '/_app/a/chats': typeof AppAChatsRoute
   '/_app/a/pujas': typeof AppAPujasRoute
   '/_app/call/$bookingId': typeof AppCallBookingIdRoute
   '/_app/chat/$bookingId': typeof AppChatBookingIdRoute
+  '/_app/u/chats': typeof AppUChatsRoute
   '/_app/a/': typeof AppAIndexRoute
   '/_app/u/': typeof AppUIndexRoute
   '/_app/a/bookings/$id': typeof AppABookingsIdRoute
@@ -166,9 +184,11 @@ export interface FileRouteTypes {
     | '/u'
     | '/dev/launch'
     | '/a/availability'
+    | '/a/chats'
     | '/a/pujas'
     | '/call/$bookingId'
     | '/chat/$bookingId'
+    | '/u/chats'
     | '/a/'
     | '/u/'
     | '/a/bookings/$id'
@@ -181,9 +201,11 @@ export interface FileRouteTypes {
     | '/dev/launch'
     | '/'
     | '/a/availability'
+    | '/a/chats'
     | '/a/pujas'
     | '/call/$bookingId'
     | '/chat/$bookingId'
+    | '/u/chats'
     | '/a'
     | '/u'
     | '/a/bookings/$id'
@@ -199,9 +221,11 @@ export interface FileRouteTypes {
     | '/dev/launch'
     | '/_app/'
     | '/_app/a/availability'
+    | '/_app/a/chats'
     | '/_app/a/pujas'
     | '/_app/call/$bookingId'
     | '/_app/chat/$bookingId'
+    | '/_app/u/chats'
     | '/_app/a/'
     | '/_app/u/'
     | '/_app/a/bookings/$id'
@@ -267,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAAvailabilityRouteImport
       parentRoute: typeof AppARoute
     }
+    '/_app/a/chats': {
+      id: '/_app/a/chats'
+      path: '/chats'
+      fullPath: '/a/chats'
+      preLoaderRoute: typeof AppAChatsRouteImport
+      parentRoute: typeof AppARoute
+    }
     '/_app/a/pujas': {
       id: '/_app/a/pujas'
       path: '/pujas'
@@ -293,6 +324,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/u/'
       preLoaderRoute: typeof AppUIndexRouteImport
+      parentRoute: typeof AppURoute
+    }
+    '/_app/u/chats': {
+      id: '/_app/u/chats'
+      path: '/chats'
+      fullPath: '/u/chats'
+      preLoaderRoute: typeof AppUChatsRouteImport
       parentRoute: typeof AppURoute
     }
     '/_app/a/bookings/$id': {
@@ -335,6 +373,7 @@ declare module '@tanstack/react-router' {
 
 interface AppARouteChildren {
   AppAAvailabilityRoute: typeof AppAAvailabilityRoute
+  AppAChatsRoute: typeof AppAChatsRoute
   AppAPujasRoute: typeof AppAPujasRoute
   AppAIndexRoute: typeof AppAIndexRoute
   AppABookingsIdRoute: typeof AppABookingsIdRoute
@@ -342,6 +381,7 @@ interface AppARouteChildren {
 
 const AppARouteChildren: AppARouteChildren = {
   AppAAvailabilityRoute: AppAAvailabilityRoute,
+  AppAChatsRoute: AppAChatsRoute,
   AppAPujasRoute: AppAPujasRoute,
   AppAIndexRoute: AppAIndexRoute,
   AppABookingsIdRoute: AppABookingsIdRoute,
@@ -350,6 +390,7 @@ const AppARouteChildren: AppARouteChildren = {
 const AppARouteWithChildren = AppARoute._addFileChildren(AppARouteChildren)
 
 interface AppURouteChildren {
+  AppUChatsRoute: typeof AppUChatsRoute
   AppUIndexRoute: typeof AppUIndexRoute
   AppUBookingsIdRoute: typeof AppUBookingsIdRoute
   AppUPujasPujaIdRoute: typeof AppUPujasPujaIdRoute
@@ -358,6 +399,7 @@ interface AppURouteChildren {
 }
 
 const AppURouteChildren: AppURouteChildren = {
+  AppUChatsRoute: AppUChatsRoute,
   AppUIndexRoute: AppUIndexRoute,
   AppUBookingsIdRoute: AppUBookingsIdRoute,
   AppUPujasPujaIdRoute: AppUPujasPujaIdRoute,

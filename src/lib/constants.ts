@@ -1,4 +1,4 @@
-export const APP_NAME = 'Sobhagya Puja';
+export const APP_NAME = 'Sobhagya Pooja';
 export const pageTitle = (page: string) => `${page} · ${APP_NAME}`;
 
 /** Puja times are Indian times for everyone; the backend works in IST too. */

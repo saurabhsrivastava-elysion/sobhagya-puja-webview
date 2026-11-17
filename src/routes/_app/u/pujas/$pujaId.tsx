@@ -25,7 +25,7 @@ function PujaDetail() {
 
   return (
     <NavPage>
-      <PageHeader title={puja.data?.name ?? 'Puja'} backTo="/u" />
+      <PageHeader title={puja.data?.name ?? 'Pooja'} backTo="/u" />
 
       {puja.isPending ? (
         <div className="flex flex-col gap-3 p-4">
@@ -92,7 +92,7 @@ function PujaDetail() {
         ) : list.length === 0 ? (
           <EmptyState
             icon={UserRoundSearch}
-            title="No astrologer is free for this puja right now"
+            title="No astrologer is free for this pooja right now"
             description="Please check again later."
           />
         ) : (
@@ -132,7 +132,7 @@ function AstrologerCard({ pujaId, astrologer: a }: { pujaId: string; astrologer:
           {[
             a.templeOrCity,
             a.yearsOfExperience ? `${a.yearsOfExperience} yrs exp` : '',
-            Number(a.pujasCompleted) > 0 ? `${a.pujasCompleted} pujas done` : '',
+            Number(a.pujasCompleted) > 0 ? `${a.pujasCompleted} poojas done` : '',
           ]
             .filter(Boolean)
             .join(' · ')}
