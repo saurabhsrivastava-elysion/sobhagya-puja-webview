@@ -34,7 +34,10 @@ export function ReasonSelectDialog({ open, reasons, onConfirm, ...props }: Reaso
       onConfirm={() => reason && onConfirm(reason)}
     >
       <Select value={reason} onValueChange={setReason}>
-        <SelectTrigger className="w-full" aria-label="Reason">
+        <SelectTrigger
+          className="h-auto min-h-8 w-full min-w-0 text-left whitespace-normal data-[size=default]:h-auto *:data-[slot=select-value]:line-clamp-none"
+          aria-label="Reason"
+        >
           <SelectValue placeholder="Select a reason" />
         </SelectTrigger>
         <SelectContent position="popper" className="w-(--radix-select-trigger-width)">

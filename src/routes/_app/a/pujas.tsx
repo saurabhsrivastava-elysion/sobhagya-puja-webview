@@ -153,6 +153,7 @@ function ApplicationForm({ item, onClose }: { item: CatalogueItem; onClose: () =
             maxLength={2000}
             value={form.pujaExperience}
             onChange={(e) => setForm({ ...form, pujaExperience: e.target.value })}
+            placeholder="e.g. Performed this pooja 200+ times over 8 years"
           />
         </FormField>
         <FormField label="Languages (comma separated)">
@@ -162,11 +163,12 @@ function ApplicationForm({ item, onClose }: { item: CatalogueItem; onClose: () =
             placeholder="Hindi, Sanskrit"
           />
         </FormField>
-        <FormField label="Temple or city">
+        <FormField label="Where you perform poojas (optional)">
           <Input
             maxLength={200}
             value={form.templeOrCity}
             onChange={(e) => setForm({ ...form, templeOrCity: e.target.value })}
+            placeholder="e.g. Kashi Vishwanath Temple, Varanasi"
           />
         </FormField>
         <FormField label="About you">
@@ -175,6 +177,7 @@ function ApplicationForm({ item, onClose }: { item: CatalogueItem; onClose: () =
             maxLength={2000}
             value={form.about}
             onChange={(e) => setForm({ ...form, about: e.target.value })}
+            placeholder="e.g. Vedic pandit from Varanasi, trained in Karmakand"
           />
         </FormField>
       </div>

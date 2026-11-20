@@ -19,7 +19,7 @@ export function BottomNav({ items }: { items: NavItem[] }) {
           <li key={item.to} className="flex-1">
             <Link
               to={item.to}
-              activeOptions={{ exact: item.exact ?? false }}
+              activeOptions={{ exact: item.exact ?? false, includeSearch: false }}
               className="group flex flex-col items-center gap-0.5 py-2 text-[11px] text-muted-foreground"
               activeProps={{ className: 'text-primary' }}
             >
