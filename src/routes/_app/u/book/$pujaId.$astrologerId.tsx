@@ -104,7 +104,7 @@ function BookPuja() {
   const lowBalance = isApiError(create.error) && create.error.code === 'INSUFFICIENT_BALANCE';
 
   return (
-    <div className="mx-auto w-full max-w-md pb-28">
+    <div className="mx-auto w-full max-w-md pb-[calc(env(safe-area-inset-bottom)+10rem)]">
       <PageHeader title="Book pooja" subtitle={puja.data?.name} backTo={`/u/pujas/${pujaId}`} />
 
       <section className="flex items-center gap-3 border-b p-4">
@@ -204,6 +204,7 @@ function BookPuja() {
             onChange={(e) => setDetails({ ...details, sankalp: e.target.value })}
             maxLength={1000}
             rows={3}
+            className="min-h-24"
             placeholder="What would you like the pooja performed for?"
           />
         </Field>

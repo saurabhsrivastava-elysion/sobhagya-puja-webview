@@ -205,7 +205,7 @@ export function ChatView({ bookingId }: { bookingId: string }) {
 
       {thread.data &&
         (thread.data.writable ? (
-          <Composer bookingId={bookingId} onSent={addMessage} />
+          <Composer bookingId={bookingId} role={role} onSent={addMessage} />
         ) : (
           <p className="flex items-center justify-center gap-1.5 border-t p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] text-xs text-muted-foreground">
             <Lock className="size-3.5" />
@@ -227,7 +227,18 @@ function MessageBubble({ message: m, mine }: { message: Message; mine: boolean }
       </p>
     );
   }
+  // A photo or video still uploading (shown at once from the phone, like WhatsApp), or one that failed.
   const pending = m._id.startsWith('local-');
+  const failed = pending && m.status === 'failed';
+  const overlay = pending && (
+    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/35">
+      {failed ? (
+        <span className="rounded-full bg-black/60 px-2 py-1 text-xs font-medium text-white">Failed</span>
+      ) : (
+        <Loader2 className="size-8 animate-spin text-white" aria-label="Uploading" />
+      )}
+    </div>
+  );
   return (
     <div
       className={cn(
@@ -238,12 +249,22 @@ function MessageBubble({ message: m, mine }: { message: Message; mine: boolean }
       )}
     >
       {m.messageType === 'image' && m.fileLink && (
-        <a href={m.fileLink} target="_blank" rel="noreferrer">
-          <img src={m.fileLink} alt="" className="max-h-72 rounded-lg object-cover" />
-        </a>
+        <div className="relative">
+          {pending ? (
+            <img src={m.fileLink} alt="" className="max-h-72 rounded-lg object-cover" />
+          ) : (
+            <a href={m.fileLink} target="_blank" rel="noreferrer">
+              <img src={m.fileLink} alt="" className="max-h-72 rounded-lg object-cover" />
+            </a>
+          )}
+          {overlay}
+        </div>
       )}
       {m.messageType === 'video' && m.fileLink && (
-        <video src={m.fileLink} controls className="max-h-72 rounded-lg" />
+        <div className="relative">
+          <video src={m.fileLink} controls={!pending} className="max-h-72 rounded-lg" />
+          {overlay}
+        </div>
       )}
       {(m.messageType === 'image' || m.messageType === 'video') && !m.fileLink && (
         <span className="text-xs opacity-70">{pending ? 'Uploading…' : 'Media no longer available'}</span>
@@ -257,7 +278,9 @@ function MessageBubble({ message: m, mine }: { message: Message; mine: boolean }
       >
         {formatTime(m.createdAt)}
         {mine &&
-          (pending ? (
+          (failed ? (
+            <span className="font-medium">Not sent</span>
+          ) : pending ? (
             <Loader2 className="size-3 animate-spin" />
           ) : m.status === 'read' ? (
             <CheckCheck className="size-3" />
@@ -269,7 +292,15 @@ function MessageBubble({ message: m, mine }: { message: Message; mine: boolean }
   );
 }
 
-function Composer({ bookingId, onSent }: { bookingId: string; onSent: (m: Message) => void }) {
+function Composer({
+  bookingId,
+  role,
+  onSent,
+}: {
+  bookingId: string;
+  role: 'user' | 'astrologer' | undefined;
+  onSent: (m: Message) => void;
+}) {
   const queryClient = useQueryClient();
   const { socket, connected } = useRealtime();
   const [text, setText] = useState('');
@@ -277,12 +308,14 @@ function Composer({ bookingId, onSent }: { bookingId: string; onSent: (m: Messag
   const fileInput = useRef<HTMLInputElement>(null);
   const typingSent = useRef(0);
 
-  const deliver = async (body: {
-    message?: string;
-    messageType: 'text' | 'image' | 'video';
-    fileLink?: string;
-  }) => {
-    const clientMessageId = newClientId();
+  const deliver = async (
+    body: {
+      message?: string;
+      messageType: 'text' | 'image' | 'video';
+      fileLink?: string;
+    },
+    clientMessageId: string = newClientId(),
+  ) => {
     // Socket first (as the app does); HTTP when the socket is down. Same clientMessageId, so never twice.
     if (socket && connected) {
       try {
@@ -324,7 +357,27 @@ function Composer({ bookingId, onSent }: { bookingId: string; onSent: (m: Messag
       toast.error('Only photos (JPG, PNG, WEBP, HEIC) and videos (MP4, MOV, WEBM, 3GP) can be sent.');
       return;
     }
-    setBusy(true);
+    if (fileInput.current) fileInput.current.value = '';
+    const clientMessageId = newClientId();
+    const caption = text.trim() || undefined;
+    const preview = URL.createObjectURL(picked);
+    const local: Message = {
+      _id: `local-${clientMessageId}`,
+      threadId: bookingId,
+      sentBy: null,
+      senderRole: role ?? 'user',
+      message: caption ?? '',
+      messageType: isImage ? 'image' : 'video',
+      fileLink: preview,
+      mimeType: picked.type,
+      durationSeconds: 0,
+      clientMessageId,
+      status: 'uploading',
+      createdAt: new Date().toISOString(),
+    };
+    onSent(local);
+    setText('');
+
     try {
       let file: File = picked;
       if (isImage && picked.type !== 'image/heic' && picked.size > 1024 * 1024) {
@@ -342,17 +395,18 @@ function Composer({ bookingId, onSent }: { bookingId: string; onSent: (m: Messag
         body: file,
       });
       if (!put.ok) throw new Error(`Upload failed (${put.status}).`);
-      await deliver({
-        messageType: isImage ? 'image' : 'video',
-        fileLink: ticket.fileUrl,
-        message: text.trim() || undefined,
-      });
-      setText('');
+      await deliver(
+        {
+          messageType: isImage ? 'image' : 'video',
+          fileLink: ticket.fileUrl,
+          message: caption,
+        },
+        clientMessageId,
+      );
+      setTimeout(() => URL.revokeObjectURL(preview), 30_000);
     } catch (err) {
+      onSent({ ...local, status: 'failed' });
       toast.error(errorMessage(err, 'Could not send the file'));
-    } finally {
-      setBusy(false);
-      if (fileInput.current) fileInput.current.value = '';
     }
   };
 
