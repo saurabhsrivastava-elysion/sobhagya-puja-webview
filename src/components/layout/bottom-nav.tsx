@@ -13,20 +13,31 @@ export interface NavItem {
 
 export function BottomNav({ items }: { items: NavItem[] }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/95 shadow-float backdrop-blur">
       <ul className="mx-auto flex max-w-md">
         {items.map((item) => (
           <li key={item.to} className="flex-1">
             <Link
               to={item.to}
               activeOptions={{ exact: item.exact ?? false, includeSearch: false }}
-              className="group flex flex-col items-center gap-0.5 py-2 text-[11px] text-muted-foreground"
-              activeProps={{ className: 'text-primary' }}
+              className="flex h-16 flex-col items-center justify-center gap-1 text-[12px] font-medium text-muted-foreground"
             >
               {({ isActive }) => (
                 <>
-                  <item.icon className={cn('size-5', isActive && 'text-primary')} />
-                  <span className={cn(isActive && 'font-medium text-primary')}>{item.label}</span>
+                  <span
+                    className={cn(
+                      'flex h-8 w-14 items-center justify-center rounded-full transition-colors duration-200',
+                      isActive && 'bg-primary-soft',
+                    )}
+                  >
+                    <item.icon
+                      className={cn('size-[22px] transition-colors', isActive && 'text-primary')}
+                      strokeWidth={isActive ? 2.2 : 1.8}
+                    />
+                  </span>
+                  <span className={cn('leading-none', isActive && 'font-semibold text-primary-strong')}>
+                    {item.label}
+                  </span>
                 </>
               )}
             </Link>
@@ -39,5 +50,9 @@ export function BottomNav({ items }: { items: NavItem[] }) {
 
 /** Page body above the bottom nav. */
 export function NavPage({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn('mx-auto w-full max-w-md pb-24', className)}>{children}</div>;
+  return (
+    <div className={cn('mx-auto w-full max-w-md pb-22', className)}>
+      {children}
+    </div>
+  );
 }

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 
 import { Button } from '@/components/ui/button';
+import { newChannel } from '@/features/call/channel';
 import * as api from '@/features/puja/api';
 import { PersonAvatar } from '@/features/puja/components/person';
 import { useMe } from '@/features/puja/hooks';
@@ -25,15 +26,9 @@ const END_REASONS: Record<string, string> = {
   CALL_TIMEOUT: 'No answer',
   CONSULTATION_EXPIRED: 'The booked time is over',
   CALL_COMPLETED: 'Call ended',
+  PUJA_TIME_OVER: 'Pooja time is over',
+  PUJA_CALL_LIMIT_REACHED: 'Your call time for this pooja is over',
 };
-
-function newChannel(bookingId: string): string {
-  const random =
-    typeof crypto !== 'undefined' && 'randomUUID' in crypto
-      ? crypto.randomUUID().slice(0, 8)
-      : String(Math.random()).slice(2, 10);
-  return `puja_${bookingId}_${Date.now()}_${random}`;
-}
 
 export function CallView({ bookingId, video }: { bookingId: string; video: boolean }) {
   const router = useRouter();
@@ -156,7 +151,7 @@ export function CallView({ bookingId, video }: { bookingId: string; video: boole
           : endNote || 'Call ended';
 
   return (
-    <main className="relative flex h-svh flex-col items-center justify-between bg-neutral-950 px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[calc(env(safe-area-inset-bottom)+2.5rem)] text-white">
+    <main className="relative flex h-svh flex-col items-center justify-between bg-neutral-950 px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-10 text-white">
       {video && (
         <video ref={remoteVideo} autoPlay playsInline className="absolute inset-0 size-full object-cover" />
       )}

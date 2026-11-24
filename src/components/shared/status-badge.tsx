@@ -4,12 +4,12 @@ import { titleCase } from '@/lib/format';
 export type Tone = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'primary';
 
 const TONE_CLASSES: Record<Tone, string> = {
-  success: 'bg-success/15 text-success-text',
-  warning: 'bg-warning/15 text-warning-text',
-  danger: 'bg-destructive/15 text-danger-text',
-  info: 'bg-info/15 text-info-text',
-  primary: 'bg-primary/15 text-primary',
-  neutral: 'bg-muted text-muted-foreground',
+  success: 'bg-success/12 text-success-text before:bg-success',
+  warning: 'bg-warning/15 text-warning-text before:bg-warning',
+  danger: 'bg-destructive/10 text-danger-text before:bg-destructive',
+  info: 'bg-info/10 text-info-text before:bg-info',
+  primary: 'bg-primary-soft text-primary-strong before:bg-primary',
+  neutral: 'bg-muted text-muted-foreground before:bg-muted-foreground/60',
 };
 
 /** Default tone for status strings that appear across the backend. Modules can override per badge. */
@@ -59,7 +59,7 @@ export function StatusBadge({ status, tone, label, className }: StatusBadgeProps
   return (
     <span
       className={cn(
-        'inline-flex h-5 items-center rounded px-1.5 text-[11px] font-medium whitespace-nowrap',
+        'inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold whitespace-nowrap before:size-1.5 before:shrink-0 before:rounded-full',
         TONE_CLASSES[tone ?? toneFor(status)],
         className,
       )}

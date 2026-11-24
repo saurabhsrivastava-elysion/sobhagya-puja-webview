@@ -1,21 +1,35 @@
 import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import imageCompression from 'browser-image-compression';
-import { Check, CheckCheck, ImagePlus, Loader2, Lock, Phone, SendHorizontal } from 'lucide-react';
+import {
+  Check,
+  CheckCheck,
+  ImagePlus,
+  Info,
+  Loader2,
+  Lock,
+  MessageCircleHeart,
+  Phone,
+  SendHorizontal,
+  Video,
+} from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { PageHeader } from '@/components/layout/page-header';
 import { QueryError } from '@/components/shared/query-error';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { handOffCallToApp } from '@/features/call/app-bridge';
+import { useVoiceCallTime } from '@/features/call/call-time';
 import * as api from '@/features/puja/api';
 import { BookingStatusBadge } from '@/features/puja/components/booking-status';
 import { PersonAvatar } from '@/features/puja/components/person';
 import { pujaKeys, pujaQueries } from '@/features/puja/queries';
 import { messageSchema, type Message } from '@/features/puja/schemas';
 import { emitWithAck, useRealtime } from '@/features/realtime/puja-socket';
-import { formatDay, formatTime, toDateKey } from '@/lib/format';
+import { formatDay, formatTime, toDate, toDateKey } from '@/lib/format';
 import { cn, errorMessage } from '@/lib/utils';
 
 const PAGE = 30;
@@ -134,49 +148,81 @@ export function ChatView({ bookingId }: { bookingId: string }) {
   }, [newestId]);
 
   const bookingPath = role === 'astrologer' ? '/a/bookings/$id' : '/u/bookings/$id';
-  const canCall = role === 'user' && thread.data?.writable;
+  // Same rule as the Call/Video buttons on the booking page: chat open and the booked time not over.
+  const callEnd = toDate(thread.data?.slotEnd);
+  const canCall = role === 'user' && thread.data?.writable && callEnd !== null && callEnd > new Date();
+  // Voice calls share a talk-time limit per booking: once it is used up only Video stays.
+  const voice = useVoiceCallTime(bookingId, Boolean(canCall));
 
   return (
-    <div className="mx-auto flex h-svh w-full max-w-md flex-col">
+    <div className="mx-auto flex h-svh w-full max-w-md flex-col bg-background">
       <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            <PersonAvatar name={otherName} src={otherAvatar} className="size-7" />
-            <span className="truncate">{otherName || 'Chat'}</span>
-          </span>
+        leading={<PersonAvatar name={otherName} src={otherAvatar} className="size-10 shrink-0" />}
+        title={otherName || 'Chat'}
+        subtitle={
+          otherTyping ? <span className="font-medium text-success-text">typing…</span> : thread.data?.pujaName
         }
-        subtitle={otherTyping ? 'typing…' : thread.data?.pujaName}
         backTo={role ? `/${role === 'astrologer' ? 'a' : 'u'}/bookings/${bookingId}` : '/'}
         actions={
           <>
             {thread.data && <BookingStatusBadge status={thread.data.bookingStatus} role={thread.data.role} />}
             {canCall && (
-              <Button asChild variant="ghost" size="icon" aria-label="Call">
-                <Link to="/call/$bookingId" params={{ bookingId }} search={{ type: 'call' }}>
-                  <Phone />
-                </Link>
-              </Button>
+              <>
+                {!voice.usedUp && (
+                  <Button asChild variant="soft" size="icon-sm" aria-label="Call">
+                    <Link
+                      to="/call/$bookingId"
+                      params={{ bookingId }}
+                      search={{ type: 'call' }}
+                      onClick={handOffCallToApp(bookingId, 'call')}
+                    >
+                      <Phone className="size-[18px]" />
+                    </Link>
+                  </Button>
+                )}
+                <Button asChild variant="soft" size="icon-sm" aria-label="Video call">
+                  <Link
+                    to="/call/$bookingId"
+                    params={{ bookingId }}
+                    search={{ type: 'video' }}
+                    onClick={handOffCallToApp(bookingId, 'video')}
+                  >
+                    <Video className="size-[18px]" />
+                  </Link>
+                </Button>
+              </>
             )}
           </>
         }
       />
 
-      <div ref={scroller} className="flex flex-1 flex-col gap-1.5 overflow-y-auto bg-muted/40 px-3 py-3">
+      <div
+        ref={scroller}
+        className="flex flex-1 flex-col overflow-y-auto overscroll-contain bg-elevated px-3 py-3"
+      >
         {thread.isError ? (
           <QueryError error={thread.error} onRetry={() => void thread.refetch()} />
         ) : messages.isPending ? (
-          <div className="flex flex-1 items-center justify-center">
-            <Loader2 className="size-5 animate-spin text-muted-foreground" />
-          </div>
+          <ChatSkeleton />
         ) : messages.isError ? (
           <QueryError error={messages.error} onRetry={() => void messages.refetch()} />
+        ) : list.length === 0 ? (
+          <div className="m-auto flex max-w-60 flex-col items-center gap-2 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-primary-soft">
+              <MessageCircleHeart className="size-7 text-primary" strokeWidth={1.6} />
+            </div>
+            <p className="font-semibold">Say namaste</p>
+            <p className="text-[13px] text-muted-foreground">
+              Messages, photos and videos about this pooja appear here.
+            </p>
+          </div>
         ) : (
           <>
             {messages.hasNextPage && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="self-center"
+                className="mb-2 self-center rounded-full"
                 disabled={messages.isFetchingNextPage}
                 onClick={() => void messages.fetchNextPage()}
               >
@@ -188,14 +234,20 @@ export function ChatView({ bookingId }: { bookingId: string }) {
               const prev = list[i - 1];
               const newDay =
                 !prev || toDateKey(new Date(prev.createdAt)) !== toDateKey(new Date(m.createdAt));
+              // Consecutive messages from the same side sit closer together.
+              const sameSide = !newDay && prev?.senderRole === m.senderRole;
               return (
                 <div key={m._id} className="contents">
                   {newDay && (
-                    <p className="my-2 self-center rounded-full bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
-                      {formatDay(m.createdAt)}
-                    </p>
+                    <div className="my-3 flex items-center gap-3 px-6">
+                      <span className="h-px flex-1 bg-border" />
+                      <span className="rounded-full bg-card px-3 py-1 text-xs font-medium text-muted-foreground shadow-card">
+                        {formatDay(m.createdAt)}
+                      </span>
+                      <span className="h-px flex-1 bg-border" />
+                    </div>
                   )}
-                  <MessageBubble message={m} mine={m.senderRole === role} />
+                  <MessageBubble message={m} mine={m.senderRole === role} tight={sameSide} />
                 </div>
               );
             })}
@@ -207,87 +259,138 @@ export function ChatView({ bookingId }: { bookingId: string }) {
         (thread.data.writable ? (
           <Composer bookingId={bookingId} role={role} onSent={addMessage} />
         ) : (
-          <p className="flex items-center justify-center gap-1.5 border-t p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] text-xs text-muted-foreground">
-            <Lock className="size-3.5" />
-            This chat is closed.{' '}
-            <Link to={bookingPath} params={{ id: bookingId }} className="text-primary underline">
-              View booking
-            </Link>
-          </p>
+          <div className="flex items-center gap-3 border-t bg-background px-4 pt-3 pb-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted">
+              <Lock className="size-4 text-muted-foreground" />
+            </span>
+            <p className="min-w-0 flex-1 text-[13px] text-muted-foreground">This chat is closed.</p>
+            <Button asChild variant="soft" size="sm">
+              <Link to={bookingPath} params={{ id: bookingId }}>
+                View booking
+              </Link>
+            </Button>
+          </div>
         ))}
     </div>
   );
 }
 
-function MessageBubble({ message: m, mine }: { message: Message; mine: boolean }) {
+function ChatSkeleton() {
+  const rows = [
+    { mine: false, w: 'w-40' },
+    { mine: true, w: 'w-52' },
+    { mine: false, w: 'w-56', h: 'h-14' },
+    { mine: true, w: 'w-32' },
+    { mine: true, w: 'w-60', h: 'h-40' },
+  ];
+  return (
+    <div className="flex flex-1 flex-col justify-end gap-2" aria-busy="true" aria-label="Loading">
+      {rows.map((r, i) => (
+        <Skeleton
+          key={i}
+          className={cn(
+            'rounded-2xl bg-card',
+            r.w,
+            r.h ?? 'h-10',
+            r.mine ? 'self-end bg-primary-soft' : 'self-start',
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
+function MessageBubble({ message: m, mine, tight }: { message: Message; mine: boolean; tight?: boolean }) {
   if (m.senderRole === 'system' || m.messageType === 'informative') {
     return (
-      <p className="my-1 self-center rounded-lg bg-primary/10 px-3 py-1.5 text-center text-xs text-foreground/80">
-        {m.message}
-      </p>
+      <div className="my-2 flex max-w-[92%] gap-2 self-center rounded-xl border border-primary-tint bg-primary-soft px-3.5 py-2.5 text-[13px] leading-relaxed text-foreground/90">
+        <Info className="mt-0.5 size-4 shrink-0 text-primary-strong" />
+        <p>{m.message}</p>
+      </div>
     );
   }
   // A photo or video still uploading (shown at once from the phone, like WhatsApp), or one that failed.
   const pending = m._id.startsWith('local-');
   const failed = pending && m.status === 'failed';
+  const isMedia = (m.messageType === 'image' || m.messageType === 'video') && Boolean(m.fileLink);
   const overlay = pending && (
-    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/35">
+    <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-foreground/35">
       {failed ? (
-        <span className="rounded-full bg-black/60 px-2 py-1 text-xs font-medium text-white">Failed</span>
+        <span className="rounded-full bg-foreground/70 px-2.5 py-1 text-xs font-semibold text-background">
+          Failed
+        </span>
       ) : (
-        <Loader2 className="size-8 animate-spin text-white" aria-label="Uploading" />
+        <Loader2 className="size-8 animate-spin text-background" aria-label="Uploading" />
       )}
     </div>
   );
+  // Media fills the bubble (WhatsApp style); a fixed width keeps tall or tiny images from breaking the layout.
+  const mediaClass = 'block aspect-[4/5] w-full max-h-80 rounded-xl bg-muted object-cover';
+
+  const meta = (
+    <span
+      className={cn(
+        'flex items-center gap-1 text-[11px] leading-none',
+        isMedia && !m.message
+          ? 'absolute right-2.5 bottom-2.5 rounded-full bg-foreground/55 px-2 py-1 text-background'
+          : 'self-end',
+        !(isMedia && !m.message) && (mine ? 'text-foreground/55' : 'text-muted-foreground'),
+      )}
+    >
+      {formatTime(m.createdAt)}
+      {mine &&
+        (failed ? (
+          <span className="font-semibold text-danger-text">Not sent</span>
+        ) : pending ? (
+          <Loader2 className="size-3 animate-spin" />
+        ) : m.status === 'read' ? (
+          <CheckCheck className={cn('size-3.5', !(isMedia && !m.message) && 'text-info')} />
+        ) : (
+          <Check className="size-3.5" />
+        ))}
+    </span>
+  );
+
   return (
     <div
       className={cn(
-        'flex max-w-[80%] flex-col gap-1 rounded-2xl px-3 py-2 text-[14px] shadow-xs',
+        'relative flex flex-col gap-1 text-[15px] leading-snug shadow-card',
+        tight ? 'mt-1' : 'mt-2.5',
+        isMedia ? 'w-[72%] max-w-72 rounded-2xl p-1' : 'max-w-[80%] rounded-2xl px-3.5 py-2',
         mine
-          ? 'self-end rounded-br-sm bg-primary text-primary-foreground'
-          : 'self-start rounded-bl-sm bg-card',
+          ? 'self-end rounded-br-md border border-primary-tint/70 bg-primary-soft text-foreground'
+          : 'self-start rounded-bl-md bg-card',
       )}
     >
       {m.messageType === 'image' && m.fileLink && (
         <div className="relative">
           {pending ? (
-            <img src={m.fileLink} alt="" className="max-h-72 rounded-lg object-cover" />
+            <img src={m.fileLink} alt="" className={mediaClass} />
           ) : (
             <a href={m.fileLink} target="_blank" rel="noreferrer">
-              <img src={m.fileLink} alt="" className="max-h-72 rounded-lg object-cover" />
+              <img src={m.fileLink} alt="Photo" className={mediaClass} loading="lazy" />
             </a>
           )}
           {overlay}
+          {!m.message && meta}
         </div>
       )}
       {m.messageType === 'video' && m.fileLink && (
         <div className="relative">
-          <video src={m.fileLink} controls={!pending} className="max-h-72 rounded-lg" />
+          <video src={m.fileLink} controls={!pending} playsInline preload="metadata" className={mediaClass} />
           {overlay}
+          {!m.message && meta}
         </div>
       )}
       {(m.messageType === 'image' || m.messageType === 'video') && !m.fileLink && (
-        <span className="text-xs opacity-70">{pending ? 'Uploading…' : 'Media no longer available'}</span>
+        <span className="text-[13px] text-muted-foreground italic">
+          {pending ? 'Uploading…' : 'Media no longer available'}
+        </span>
       )}
-      {m.message && <span className="break-words whitespace-pre-wrap">{m.message}</span>}
-      <span
-        className={cn(
-          'flex items-center gap-1 self-end text-[10px]',
-          mine ? 'opacity-80' : 'text-muted-foreground',
-        )}
-      >
-        {formatTime(m.createdAt)}
-        {mine &&
-          (failed ? (
-            <span className="font-medium">Not sent</span>
-          ) : pending ? (
-            <Loader2 className="size-3 animate-spin" />
-          ) : m.status === 'read' ? (
-            <CheckCheck className="size-3" />
-          ) : (
-            <Check className="size-3" />
-          ))}
-      </span>
+      {m.message && (
+        <span className={cn('break-words whitespace-pre-wrap', isMedia && 'px-2.5 pt-1')}>{m.message}</span>
+      )}
+      {(!isMedia || m.message) && <span className={cn(isMedia && 'px-2.5 pb-1.5', 'self-end')}>{meta}</span>}
     </div>
   );
 }
@@ -420,7 +523,7 @@ function Composer({
   };
 
   return (
-    <div className="flex items-end gap-2 border-t bg-background p-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
+    <div className="flex items-end gap-2 border-t bg-background px-2.5 pt-2.5 pb-2.5">
       <input
         ref={fileInput}
         type="file"
@@ -432,7 +535,7 @@ function Composer({
         }}
       />
       <Button
-        variant="ghost"
+        variant="soft"
         size="icon-lg"
         aria-label="Send photo or video"
         disabled={busy}
@@ -452,11 +555,11 @@ function Composer({
         rows={1}
         maxLength={4000}
         placeholder="Message"
-        className="max-h-32 min-h-10 flex-1 resize-none rounded-2xl"
+        className="max-h-32 min-h-11 flex-1 resize-none rounded-3xl border-transparent bg-muted px-4 py-2.5 focus-visible:bg-card"
       />
       <Button
         size="icon-lg"
-        className="rounded-full"
+        className="rounded-full shadow-[0_2px_8px_rgb(255_152_0/0.35)]"
         aria-label="Send"
         disabled={busy || !text.trim()}
         onClick={() => void sendText()}

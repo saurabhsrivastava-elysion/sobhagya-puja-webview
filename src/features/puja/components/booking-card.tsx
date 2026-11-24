@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { MessageCircle } from 'lucide-react';
+import { CalendarDays, ChevronRight, MessageCircle } from 'lucide-react';
 
 import { BookingStatusBadge } from '@/features/puja/components/booking-status';
 import { PersonAvatar } from '@/features/puja/components/person';
@@ -16,30 +16,36 @@ export function BookingCard({ booking, role }: { booking: Booking; role: 'user' 
     <Link
       to={role === 'user' ? '/u/bookings/$id' : '/a/bookings/$id'}
       params={{ id: booking.id }}
-      className="flex gap-3 rounded-xl border bg-card p-3 transition-colors active:bg-accent"
+      className="flex flex-col gap-3 surface p-4 transition-transform duration-150 active:scale-[0.99] active:bg-muted/40"
     >
-      <PersonAvatar name={other.name} src={other.avatar} className="size-12" />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <p className="truncate font-medium">{booking.puja?.name || 'Pooja'}</p>
-          <BookingStatusBadge status={booking.status} role={role} />
+      <div className="flex items-start gap-3">
+        <PersonAvatar name={other.name} src={other.avatar} className="size-12" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[15px] font-semibold">{booking.puja?.name || 'Pooja'}</p>
+          <p className="truncate text-[13px] text-muted-foreground">
+            {role === 'user' ? 'with ' : 'for '}
+            <span className="font-medium text-foreground/80">{forName || '—'}</span>
+          </p>
         </div>
-        <p className="truncate text-xs text-muted-foreground">
-          {role === 'user' ? 'with ' : 'for '}
-          {forName || '—'}
-        </p>
-        <div className="mt-1 flex items-center justify-between text-xs">
-          <span>{formatSlot(booking.slotStart)}</span>
-          <span className="flex items-center gap-2 text-muted-foreground">
-            {Number(unread) > 0 && (
-              <span className="flex items-center gap-0.5 text-primary">
-                <MessageCircle className="size-3.5" />
-                {unread}
-              </span>
-            )}
-            {formatRupees(booking.amount)}
+        <BookingStatusBadge status={booking.status} role={role} />
+      </div>
+      <div className="flex items-center justify-between gap-2 border-t border-dashed pt-3 text-[13px]">
+        <span className="flex items-center gap-1.5 font-medium">
+          <CalendarDays className="size-4 text-primary" />
+          {formatSlot(booking.slotStart)}
+        </span>
+        <span className="flex items-center gap-2.5">
+          {Number(unread) > 0 && (
+            <span className="flex h-6 items-center gap-1 rounded-full bg-primary px-2 text-xs font-semibold text-primary-foreground">
+              <MessageCircle className="size-3.5" />
+              {unread}
+            </span>
+          )}
+          <span className="font-bold">
+            {formatRupees(role === 'astrologer' ? (booking.astrologerEarning ?? booking.amount) : booking.amount)}
           </span>
-        </div>
+          <ChevronRight className="-mr-1 size-4 text-muted-foreground" />
+        </span>
       </div>
     </Link>
   );

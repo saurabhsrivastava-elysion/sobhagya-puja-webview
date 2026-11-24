@@ -45,7 +45,11 @@ export function WheelTimeField({ value, onChange }: { value: string; onChange: (
   return (
     <Popover open={open} onOpenChange={openChange}>
       <PopoverTrigger asChild>
-        <Button type="button" variant="outline" className="h-9 w-full justify-between px-3 font-normal">
+        <Button
+          type="button"
+          variant="outline"
+          className="h-11 w-full justify-between px-3 text-[15px] font-normal"
+        >
           {value ? label(value) : 'Select time'}
           <Clock className="size-4 opacity-60" />
         </Button>
@@ -58,21 +62,27 @@ export function WheelTimeField({ value, onChange }: { value: string; onChange: (
             <Picker.Column name="hour">
               {HOURS.map((h) => (
                 <Picker.Item key={h} value={h}>
-                  {({ selected }) => <span className={selected ? 'font-semibold' : 'text-muted-foreground'}>{h}</span>}
+                  {({ selected }) => (
+                    <span className={selected ? 'font-semibold' : 'text-muted-foreground'}>{h}</span>
+                  )}
                 </Picker.Item>
               ))}
             </Picker.Column>
             <Picker.Column name="minute">
               {MINUTES.map((m) => (
                 <Picker.Item key={m} value={m}>
-                  {({ selected }) => <span className={selected ? 'font-semibold' : 'text-muted-foreground'}>{m}</span>}
+                  {({ selected }) => (
+                    <span className={selected ? 'font-semibold' : 'text-muted-foreground'}>{m}</span>
+                  )}
                 </Picker.Item>
               ))}
             </Picker.Column>
             <Picker.Column name="period">
               {PERIODS.map((p) => (
                 <Picker.Item key={p} value={p}>
-                  {({ selected }) => <span className={selected ? 'font-semibold' : 'text-muted-foreground'}>{p}</span>}
+                  {({ selected }) => (
+                    <span className={selected ? 'font-semibold' : 'text-muted-foreground'}>{p}</span>
+                  )}
                 </Picker.Item>
               ))}
             </Picker.Column>
