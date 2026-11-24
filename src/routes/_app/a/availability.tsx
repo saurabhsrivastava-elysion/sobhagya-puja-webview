@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { CalendarClock, CalendarPlus, Loader2, Repeat, Trash2 } from 'lucide-react';
+import { CalendarClock, CalendarPlus, Flower2, Loader2, Repeat, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ListSkeleton } from '@/features/puja/components/lists';
+import { Skeleton } from '@/components/ui/skeleton';
 import { WheelTimeField } from '@/features/puja/components/wheel-time-field';
 import { useCreatePattern, useCreateWindow, useDeleteWindow } from '@/features/puja/hooks';
 import { pujaQueries } from '@/features/puja/queries';
@@ -69,26 +69,47 @@ function Availability() {
   return (
     <NavPage>
       <PageHeader title="Availability" subtitle="When you are free to perform poojas (IST)" />
-      <div className="grid grid-cols-2 gap-2 p-4 pb-0">
-        <Button variant="outline" className="h-11" onClick={() => setDialog('single')}>
-          <CalendarPlus />
-          Add time
-        </Button>
-        <Button variant="outline" className="h-11" onClick={() => setDialog('pattern')}>
-          <Repeat />
-          Weekly hours
-        </Button>
+      <div className="grid grid-cols-2 gap-3 px-4 pt-4">
+        <ActionTile
+          icon={<CalendarPlus />}
+          title="Add time"
+          hint="One day"
+          active={dialog === 'single'}
+          onClick={() => setDialog('single')}
+        />
+        <ActionTile
+          icon={<Repeat />}
+          title="Weekly hours"
+          hint="Repeat on weekdays"
+          active={dialog === 'pattern'}
+          onClick={() => setDialog('pattern')}
+        />
       </div>
-      {calendar.data && (
-        <p className="px-4 pt-2 text-xs text-muted-foreground">
-          Users can book start times inside your free time.{' '}
-          {calendar.data.gapMinutes ? `${calendar.data.gapMinutes} min are kept free after each pooja.` : ''}
-        </p>
-      )}
+
+      <div className="flex flex-col gap-2 px-4 pt-4">
+        <div className="flex items-center gap-4 text-xs font-medium">
+          <span className="flex items-center gap-1.5">
+            <span className="size-3 rounded-sm border-l-[3px] border-free-text bg-free" />
+            Free time
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="size-3 rounded-sm border-l-[3px] border-primary bg-booked" />
+            Booked pooja
+          </span>
+        </div>
+        {calendar.data && (
+          <p className="text-[13px] leading-relaxed text-muted-foreground">
+            Users can book start times inside your free time.{' '}
+            {calendar.data.gapMinutes
+              ? `${calendar.data.gapMinutes} min are kept free after each pooja.`
+              : ''}
+          </p>
+        )}
+      </div>
 
       <section className="flex flex-col gap-3 p-4">
         {calendar.isPending ? (
-          <ListSkeleton rows={3} />
+          <DaySkeleton />
         ) : calendar.isError ? (
           <QueryError error={calendar.error} onRetry={() => void calendar.refetch()} />
         ) : days.length === 0 ? (
@@ -96,45 +117,90 @@ function Availability() {
             icon={CalendarClock}
             title="No free time added"
             description="Add the times you can perform poojas so users can book you."
+            action={
+              <Button onClick={() => setDialog('pattern')}>
+                <Repeat />
+                Set weekly hours
+              </Button>
+            }
           />
         ) : (
-          days.map(([key, day]) => (
-            <article key={key} className="rounded-xl border bg-card p-3">
-              <h3 className="mb-2 text-[13px] font-semibold">{formatDay(istInstant(key, '12:00'))}</h3>
-              <ul className="flex flex-col gap-1.5">
-                {day.windows.map((w) => (
-                  <li
-                    key={w.id}
-                    className="flex items-center justify-between rounded-lg bg-success/10 px-2 py-1.5 text-[13px]"
+          days.map(([key, day]) => {
+            const [weekday, rest = ''] = formatDay(istInstant(key, '12:00')).split(', ');
+            const [dayNum, month] = rest.split(' ');
+            const isToday = key === from;
+            // Free blocks and bookings in time order, so the day reads like a timeline.
+            const items = [
+              ...day.windows.map((w) => ({ kind: 'free' as const, at: w.startTime, w })),
+              ...day.bookings.map((b) => ({ kind: 'booked' as const, at: b.startTime, b })),
+            ].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+            return (
+              <article key={key} className="flex gap-3 surface p-3">
+                <div
+                  className={cn(
+                    'flex w-14 shrink-0 flex-col items-center justify-center self-start rounded-xl py-2',
+                    isToday ? 'bg-primary text-primary-foreground' : 'bg-muted',
+                  )}
+                >
+                  <span
+                    className={cn('text-[11px] font-semibold uppercase', !isToday && 'text-muted-foreground')}
                   >
-                    <span>
-                      Free {formatTime(w.startTime)} – {formatTime(w.endTime)}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label="Remove"
-                      onClick={() =>
-                        setDeleting({
-                          id: w.id,
-                          label: `${formatDay(w.startTime)}, ${formatTime(w.startTime)} – ${formatTime(w.endTime)}`,
-                        })
-                      }
-                    >
-                      <Trash2 className="text-destructive" />
-                    </Button>
-                  </li>
-                ))}
-                {day.bookings.map((b) => (
-                  <li key={b.bookingId} className="rounded-lg bg-primary/10 px-2 py-1.5 text-[13px]">
-                    <span className="font-medium">{b.pujaName || 'Pooja'}</span> · {formatTime(b.startTime)} –{' '}
-                    {formatTime(b.endTime)}
-                    {b.userName && <span className="text-muted-foreground"> · {b.userName}</span>}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))
+                    {isToday ? 'Today' : weekday}
+                  </span>
+                  <span className="text-xl leading-tight font-bold">{dayNum}</span>
+                  <span className={cn('text-[11px]', !isToday && 'text-muted-foreground')}>{month}</span>
+                </div>
+                <ul className="flex min-w-0 flex-1 flex-col gap-2">
+                  {items.map((item) =>
+                    item.kind === 'free' ? (
+                      <li
+                        key={item.w.id}
+                        className="flex items-center gap-2 rounded-lg border-l-4 border-free-text bg-free py-1 pr-1 pl-3"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[11px] font-semibold tracking-wide text-free-text uppercase">
+                            Free
+                          </p>
+                          <p className="text-sm font-semibold">
+                            {formatTime(item.w.startTime)} – {formatTime(item.w.endTime)}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Remove free time"
+                          className="text-danger-text active:bg-destructive/10"
+                          onClick={() =>
+                            setDeleting({
+                              id: item.w.id,
+                              label: `${formatDay(item.w.startTime)}, ${formatTime(item.w.startTime)} – ${formatTime(item.w.endTime)}`,
+                            })
+                          }
+                        >
+                          <Trash2 className="size-[18px]" />
+                        </Button>
+                      </li>
+                    ) : (
+                      <li
+                        key={item.b.bookingId}
+                        className="rounded-lg border-l-4 border-primary bg-booked py-2 pr-2 pl-3"
+                      >
+                        <p className="flex items-center gap-1 text-[11px] font-semibold tracking-wide text-booked-text uppercase">
+                          <Flower2 className="size-3" />
+                          Booked
+                        </p>
+                        <p className="truncate text-sm font-semibold">{item.b.pujaName || 'Pooja'}</p>
+                        <p className="truncate text-[13px] text-muted-foreground">
+                          {formatTime(item.b.startTime)} – {formatTime(item.b.endTime)}
+                          {item.b.userName && ` · ${item.b.userName}`}
+                        </p>
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </article>
+            );
+          })
         )}
       </section>
 
@@ -252,15 +318,17 @@ function PatternDialog({ open, onClose }: { open: boolean; onClose: () => void }
             </FormField>
           </div>
           <FormField label="Days">
-            <div className="flex gap-1">
+            <div className="flex gap-1.5">
               {WEEKDAYS.map((label, d) => (
                 <button
                   key={label}
                   type="button"
                   onClick={() => toggle(d)}
                   className={cn(
-                    'h-9 flex-1 rounded-md border text-xs',
-                    weekdays.includes(d) ? 'border-primary bg-primary text-primary-foreground' : 'bg-card',
+                    'h-11 flex-1 rounded-xl border text-[13px] font-semibold transition-colors',
+                    weekdays.includes(d)
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-card active:bg-muted',
                   )}
                 >
                   {label}
@@ -294,8 +362,63 @@ function PatternDialog({ open, onClose }: { open: boolean; onClose: () => void }
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label className="text-xs">{label}</Label>
+      <Label className="text-[13px] font-semibold">{label}</Label>
       {children}
+    </div>
+  );
+}
+
+function ActionTile({
+  icon,
+  title,
+  hint,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  hint: string;
+  active?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        'flex min-h-[68px] items-center gap-3 rounded-2xl border p-3 text-left transition-all duration-150 active:scale-[0.98]',
+        active ? 'border-primary-tint bg-primary-soft' : 'border-border bg-card shadow-card',
+      )}
+    >
+      <span
+        className={cn(
+          'flex size-10 shrink-0 items-center justify-center rounded-xl transition-colors [&_svg]:size-5',
+          active ? 'bg-primary text-primary-foreground' : 'bg-primary-soft text-primary-strong',
+        )}
+      >
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-bold">{title}</span>
+        <span className="block truncate text-xs text-muted-foreground">{hint}</span>
+      </span>
+    </button>
+  );
+}
+
+function DaySkeleton() {
+  return (
+    <div className="flex flex-col gap-3" aria-busy="true" aria-label="Loading">
+      {Array.from({ length: 3 }, (_, i) => (
+        <div key={i} className="flex gap-3 surface p-3">
+          <Skeleton className="h-[68px] w-14 rounded-xl" />
+          <div className="flex flex-1 flex-col gap-2">
+            <Skeleton className="h-12 w-full rounded-lg" />
+            {i === 0 && <Skeleton className="h-14 w-full rounded-lg" />}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

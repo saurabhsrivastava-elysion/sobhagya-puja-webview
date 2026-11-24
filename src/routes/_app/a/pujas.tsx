@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { Flower2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Clock, Flower2, Loader2, MessageSquareText, Pencil, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { NavPage } from '@/components/layout/bottom-nav';
@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ListSkeleton } from '@/features/puja/components/lists';
+import { PujaImage } from '@/features/puja/components/puja-image';
 import { useSaveApplication } from '@/features/puja/hooks';
 import { pujaQueries } from '@/features/puja/queries';
 import type { CatalogueItem } from '@/features/puja/schemas';
@@ -48,47 +49,62 @@ function MyPujas() {
       <PageHeader title="My poojas" subtitle="Apply for the poojas you perform" />
       <section className="flex flex-col gap-3 p-4">
         {catalogue.isPending ? (
-          <ListSkeleton />
+          <ListSkeleton media="image" />
         ) : catalogue.isError ? (
           <QueryError error={catalogue.error} onRetry={() => void catalogue.refetch()} />
         ) : items.length === 0 ? (
-          <EmptyState icon={Flower2} title="No poojas are open yet" />
+          <EmptyState
+            icon={Flower2}
+            title="No poojas are open yet"
+            description="Poojas you can apply for will appear here."
+          />
         ) : (
           items.map((item) => {
             const app = item.application;
             const status = app ? APPLICATION[app.status] : null;
             return (
-              <article key={item.id} className="flex flex-col gap-2 rounded-xl border bg-card p-3">
+              <article key={item.id} className="flex flex-col gap-3 surface p-3">
                 <div className="flex gap-3">
-                  {item.images[0] ? (
-                    <img src={item.images[0]} alt="" className="size-14 shrink-0 rounded-lg object-cover" />
-                  ) : (
-                    <div className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-muted text-primary">
-                      <Flower2 className="size-6" />
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
+                  <div className="size-[72px] shrink-0 overflow-hidden rounded-xl">
+                    <PujaImage src={item.images[0]} />
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1 py-0.5">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium">{item.name}</p>
+                      <p className="line-clamp-2 text-[15px] leading-snug font-semibold">{item.name}</p>
                       {status && <StatusBadge status={app?.status} tone={status.tone} label={status.label} />}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatMinutes(item.durationMinutes)} · {formatRupees(item.price)}
-                    </p>
-                    {app && Number(app.stats?.completed) > 0 && (
-                      <p className="text-xs text-muted-foreground">{app.stats?.completed} performed</p>
-                    )}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="size-3.5" />
+                        {formatMinutes(item.durationMinutes)}
+                      </span>
+                      <span className="font-semibold text-foreground">{formatRupees(item.price)}</span>
+                      {app && Number(app.stats?.completed) > 0 && (
+                        <span className="flex items-center gap-1">
+                          <CheckCircle2 className="size-3.5 text-success-text" />
+                          {app.stats?.completed} performed
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 {app?.adminNote && (
-                  <p className="rounded-md bg-muted px-2 py-1 text-xs">Sobhagya: {app.adminNote}</p>
+                  <div className="flex gap-2 rounded-lg bg-muted px-3 py-2 text-[13px]">
+                    <MessageSquareText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                    <p>
+                      <span className="font-semibold">Sobhagya: </span>
+                      {app.adminNote}
+                    </p>
+                  </div>
                 )}
                 {!app ? (
-                  <Button size="sm" onClick={() => setEditing(item)}>
-                    Apply
+                  <Button variant="outline-primary" onClick={() => setEditing(item)}>
+                    <Plus />
+                    Apply for this pooja
                   </Button>
                 ) : app.status === 'APPLIED' ? (
-                  <Button size="sm" variant="outline" onClick={() => setEditing(item)}>
+                  <Button variant="secondary" onClick={() => setEditing(item)}>
+                    <Pencil />
                     Edit application
                   </Button>
                 ) : null}
@@ -197,7 +213,7 @@ function ApplicationForm({ item, onClose }: { item: CatalogueItem; onClose: () =
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label className="text-xs">{label}</Label>
+      <Label className="text-[13px] font-semibold">{label}</Label>
       {children}
     </div>
   );

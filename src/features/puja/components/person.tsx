@@ -21,9 +21,9 @@ export function PersonAvatar({
   className?: string;
 }) {
   return (
-    <Avatar className={cn('size-10', className)}>
+    <Avatar className={cn('size-10 ring-2 ring-primary-soft', className)}>
       {src ? <AvatarImage src={src} alt="" className="object-cover" /> : null}
-      <AvatarFallback className="bg-primary/15 text-xs font-medium text-primary">
+      <AvatarFallback className="bg-gradient-to-br from-primary-soft to-primary-tint/70 text-sm font-semibold text-primary-strong">
         {initials(name)}
       </AvatarFallback>
     </Avatar>

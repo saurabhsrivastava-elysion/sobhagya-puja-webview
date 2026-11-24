@@ -25,6 +25,7 @@ export const pujaKeys = {
   threads: () => [...pujaKeys.all, 'threads'] as const,
   thread: (id: string) => [...pujaKeys.all, 'thread', id] as const,
   messages: (id: string) => [...pujaKeys.all, 'messages', id] as const,
+  callTime: (bookingId: string) => [...pujaKeys.all, 'call-time', bookingId] as const,
 };
 
 const PAGE_SIZE = 20;
@@ -90,4 +91,15 @@ export const pujaQueries = {
 
   thread: (id: string) =>
     queryOptions({ queryKey: pujaKeys.thread(id), queryFn: () => api.getThread(id), staleTime: 5_000 }),
+
+  // Changes after every voice call, which happens in the app: refetch whenever the page is shown again.
+  callTime: (bookingId: string) =>
+    queryOptions({
+      queryKey: pujaKeys.callTime(bookingId),
+      queryFn: () => api.getPujaCallTime(bookingId),
+      staleTime: 0,
+      refetchOnWindowFocus: 'always',
+      // A WebView does not always get a focus event when the app's call screen closes.
+      refetchInterval: 60_000,
+    }),
 };

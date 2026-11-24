@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { CalendarClock, Clock, IndianRupee, MessageCircle, Phone, Star, Video } from 'lucide-react';
+import { CalendarClock, Clock, IndianRupee, Info, MessageCircle, Phone, Star, Video } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
 import { PageHeader } from '@/components/layout/page-header';
@@ -9,6 +9,8 @@ import { QueryError } from '@/components/shared/query-error';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { handOffCallToApp } from '@/features/call/app-bridge';
+import { formatCallTime, useVoiceCallTime } from '@/features/call/call-time';
 import { BookingStatusBadge, outcomeLabel } from '@/features/puja/components/booking-status';
 import { PersonAvatar } from '@/features/puja/components/person';
 import { ReasonDialog } from '@/features/puja/components/reason-dialog';
@@ -30,9 +32,18 @@ export function BookingDetail({ role, id }: { role: Role; id: string }) {
     return (
       <>
         <PageHeader title="Booking" backTo={backTo} />
-        <div className="flex flex-col gap-3 p-4">
-          <Skeleton className="h-24 w-full rounded-xl" />
-          <Skeleton className="h-40 w-full rounded-xl" />
+        <div className="flex flex-col gap-3 p-4" aria-busy="true" aria-label="Loading">
+          <div className="flex items-center gap-3 surface p-4">
+            <Skeleton className="size-14 rounded-full" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <Skeleton className="h-6 w-20 rounded-full" />
+          </div>
+          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-44 w-full rounded-2xl" />
+          <Skeleton className="h-32 w-full rounded-2xl" />
         </div>
       </>
     );
@@ -56,11 +67,13 @@ export function BookingDetail({ role, id }: { role: Role; id: string }) {
     <>
       <PageHeader title={b.puja?.name || 'Booking'} subtitle={formatSlot(b.slotStart)} backTo={backTo} />
       <div className="flex flex-col gap-3 p-4">
-        <section className="flex items-center gap-3 rounded-xl border bg-card p-3">
-          <PersonAvatar name={other.name} src={other.avatar} className="size-12" />
+        <section className="flex items-center gap-3 surface p-4">
+          <PersonAvatar name={other.name} src={other.avatar} className="size-14" />
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground">{role === 'user' ? 'Astrologer' : 'Booked by'}</p>
-            <p className="truncate font-medium">{other.name || '—'}</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              {role === 'user' ? 'Astrologer' : 'Booked by'}
+            </p>
+            <p className="truncate text-base font-bold">{other.name || '—'}</p>
           </div>
           <BookingStatusBadge status={b.status} role={role} />
         </section>
@@ -69,22 +82,29 @@ export function BookingDetail({ role, id }: { role: Role; id: string }) {
 
         <ConversationButtons booking={b} role={role} />
 
-        <section className="flex flex-col gap-2 rounded-xl border bg-card p-3 text-[13px]">
+        <section className="flex flex-col gap-3.5 surface p-4 text-sm">
           <Row icon={<CalendarClock />} label="When">
             {formatSlot(b.slotStart)} – {formatTime(b.slotEnd)}
           </Row>
           <Row icon={<Clock />} label="Duration">
             {formatMinutes(b.puja?.durationMinutes)}
           </Row>
-          <Row icon={<IndianRupee />} label={role === 'user' ? 'Paid' : 'Amount'}>
-            {formatRupees(b.amount)}
-            {b.refund && Number(b.refund.amount) > 0 && (
-              <span className="ml-1 text-success-text">
-                · {formatRupees(b.refund.amount)} refund{' '}
-                {b.refund.status === 'DONE' ? 'credited' : 'in progress'}
-              </span>
-            )}
-          </Row>
+          {role === 'astrologer' ? (
+            // The astrologer sees what they get (price minus Sobhagya's commission), not what the user paid.
+            <Row icon={<IndianRupee />} label="Your earning">
+              {formatRupees(b.astrologerEarning ?? b.amount)}
+            </Row>
+          ) : (
+            <Row icon={<IndianRupee />} label="Paid">
+              {formatRupees(b.amount)}
+              {b.refund && Number(b.refund.amount) > 0 && (
+                <span className="ml-1 text-success-text">
+                  · {formatRupees(b.refund.amount)} refund{' '}
+                  {b.refund.status === 'DONE' ? 'credited' : 'in progress'}
+                </span>
+              )}
+            </Row>
+          )}
           {outcome && (
             <Row icon={<Star />} label="Result">
               {outcome}
@@ -93,8 +113,8 @@ export function BookingDetail({ role, id }: { role: Role; id: string }) {
         </section>
 
         {b.userDetails && (
-          <section className="flex flex-col gap-1.5 rounded-xl border bg-card p-3 text-[13px]">
-            <h3 className="font-medium">Pooja details</h3>
+          <section className="flex flex-col gap-3 surface p-4 text-sm">
+            <h3 className="text-[15px] font-bold">Pooja details</h3>
             <Detail label="Name">{b.userDetails.name}</Detail>
             <Detail label="Gotra">{b.userDetails.gotra}</Detail>
             <Detail label="Date of birth">{b.userDetails.dateOfBirth}</Detail>
@@ -103,19 +123,21 @@ export function BookingDetail({ role, id }: { role: Role; id: string }) {
         )}
 
         {b.markedDoneNote && (
-          <section className="rounded-xl border bg-card p-3 text-[13px]">
-            <h3 className="font-medium">Astrologer’s note</h3>
-            <p className="mt-1 whitespace-pre-line text-muted-foreground">{b.markedDoneNote}</p>
+          <section className="surface p-4 text-sm">
+            <h3 className="text-[15px] font-bold">Astrologer’s note</h3>
+            <p className="mt-1.5 leading-relaxed whitespace-pre-line text-muted-foreground">
+              {b.markedDoneNote}
+            </p>
           </section>
         )}
 
         {b.review && (
-          <section className="rounded-xl border bg-card p-3 text-[13px]">
-            <h3 className="flex items-center gap-1 font-medium">
+          <section className="surface p-4 text-sm">
+            <h3 className="flex items-center gap-2 text-[15px] font-bold">
               Review
               <Stars value={Number(b.review.rating)} />
             </h3>
-            {b.review.text && <p className="mt-1 text-muted-foreground">{b.review.text}</p>}
+            {b.review.text && <p className="mt-1.5 leading-relaxed text-muted-foreground">{b.review.text}</p>}
           </section>
         )}
 
@@ -127,10 +149,14 @@ export function BookingDetail({ role, id }: { role: Role; id: string }) {
 
 function Row({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
   return (
-    <div className="flex items-start gap-2">
-      <span className="mt-0.5 text-muted-foreground [&_svg]:size-4">{icon}</span>
-      <span className="w-20 shrink-0 text-muted-foreground">{label}</span>
-      <span className="min-w-0 flex-1">{children}</span>
+    <div className="flex items-center gap-3">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary-strong [&_svg]:size-4">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="font-medium">{children}</p>
+      </div>
     </div>
   );
 }
@@ -138,10 +164,10 @@ function Row({ icon, label, children }: { icon: ReactNode; label: string; childr
 function Detail({ label, children }: { label: string; children: string | null | undefined }) {
   if (!children) return null;
   return (
-    <p>
-      <span className="text-muted-foreground">{label}: </span>
-      <span className="whitespace-pre-line">{children}</span>
-    </p>
+    <div className="grid grid-cols-[7rem_1fr] gap-3 border-t border-dashed pt-3">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium whitespace-pre-line">{children}</span>
+    </div>
   );
 }
 
@@ -159,7 +185,7 @@ function Stars({ value, onChange }: { value: number; onChange?: (v: number) => v
         >
           <Star
             className={cn(
-              onChange ? 'size-8' : 'size-3.5',
+              onChange ? 'size-10' : 'size-4',
               n <= value ? 'fill-warning text-warning' : 'text-muted-foreground',
             )}
           />
@@ -190,11 +216,23 @@ function StatusNote({ booking: b, role }: { booking: Booking; role: Role }) {
         };
   const note = notes[b.status];
   if (!note) return null;
-  return <p className="rounded-lg bg-primary/10 px-3 py-2 text-[13px]">{note}</p>;
+  const danger = b.status === 'DISPUTED';
+  return (
+    <div
+      className={cn(
+        'flex gap-3 rounded-xl border p-3.5 text-sm leading-relaxed',
+        danger ? 'border-destructive/20 bg-destructive/5' : 'border-primary-tint bg-primary-soft',
+      )}
+    >
+      <Info
+        className={cn('mt-0.5 size-[18px] shrink-0', danger ? 'text-danger-text' : 'text-primary-strong')}
+      />
+      <p>{note}</p>
+    </div>
+  );
 }
 
 function ConversationButtons({ booking: b, role }: { booking: Booking; role: Role }) {
-  if (!CHAT_VISIBLE.includes(b.status)) return null;
   const end = toDate(b.slotEnd);
   const canCall =
     role === 'user' &&
@@ -202,36 +240,75 @@ function ConversationButtons({ booking: b, role }: { booking: Booking; role: Rol
     (b.puja?.callAllowed ?? true) &&
     end !== null &&
     end > new Date();
+  // Voice calls share a talk-time limit per booking; video calls run until the slot ends.
+  const voice = useVoiceCallTime(b.id, canCall);
+  if (!CHAT_VISIBLE.includes(b.status)) return null;
   const unread = role === 'user' ? b.chat?.unreadForUser : b.chat?.unreadForAstrologer;
 
   return (
-    <div className="grid grid-flow-col gap-2">
-      <Button asChild variant="outline" className="h-11">
-        <Link to="/chat/$bookingId" params={{ bookingId: b.id }}>
-          <MessageCircle />
-          Chat
-          {Number(unread) > 0 && (
-            <span className="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
-              {unread}
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-flow-col gap-2">
+        <Button asChild variant="soft" size="lg">
+          <Link to="/chat/$bookingId" params={{ bookingId: b.id }}>
+            <MessageCircle className="size-5" />
+            Chat
+            {Number(unread) > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">
+                {unread}
+              </span>
+            )}
+          </Link>
+        </Button>
+        {canCall && (
+          <>
+            {voice.usedUp ? (
+              <Button variant="outline" size="lg" disabled aria-describedby="voice-call-time">
+                <Phone />
+                Call
+              </Button>
+            ) : (
+              <Button asChild variant="outline" size="lg">
+                <Link
+                  to="/call/$bookingId"
+                  params={{ bookingId: b.id }}
+                  search={{ type: 'call' }}
+                  onClick={handOffCallToApp(b.id, 'call')}
+                >
+                  <Phone />
+                  Call
+                </Link>
+              </Button>
+            )}
+            <Button asChild variant="outline" size="lg">
+              <Link
+                to="/call/$bookingId"
+                params={{ bookingId: b.id }}
+                search={{ type: 'video' }}
+                onClick={handOffCallToApp(b.id, 'video')}
+              >
+                <Video />
+                Video
+              </Link>
+            </Button>
+          </>
+        )}
+      </div>
+      {canCall && voice.remainingSeconds !== null && voice.limitSeconds !== null && (
+        <p id="voice-call-time" className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+          <Clock className="size-3.5 shrink-0" />
+          {voice.usedUp ? (
+            <span>
+              Your {formatCallTime(voice.limitSeconds)} of call time is used up. Video call is available till
+              the pooja slot ends.
+            </span>
+          ) : (
+            <span>
+              Call time left:{' '}
+              <span className="font-semibold text-foreground">{formatCallTime(voice.remainingSeconds)}</span>{' '}
+              of {formatCallTime(voice.limitSeconds)}. Video call is available till the pooja slot ends.
             </span>
           )}
-        </Link>
-      </Button>
-      {canCall && (
-        <>
-          <Button asChild variant="outline" className="h-11">
-            <Link to="/call/$bookingId" params={{ bookingId: b.id }} search={{ type: 'call' }}>
-              <Phone />
-              Call
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-11">
-            <Link to="/call/$bookingId" params={{ bookingId: b.id }} search={{ type: 'video' }}>
-              <Video />
-              Video
-            </Link>
-          </Button>
-        </>
+        </p>
       )}
     </div>
   );
@@ -253,22 +330,22 @@ function UserActions({ booking: b }: { booking: Booking }) {
     <div className="flex flex-col gap-2 pt-1">
       {b.status === 'MARKED_DONE' && (
         <>
-          <Button className="h-11" onClick={() => setDialog('confirm')}>
+          <Button size="lg" onClick={() => setDialog('confirm')}>
             Confirm pooja completed
           </Button>
-          <Button variant="outline" className="h-11" onClick={() => setDialog('dispute')}>
+          <Button variant="outline" size="lg" onClick={() => setDialog('dispute')}>
             Report a problem
           </Button>
         </>
       )}
       {b.status === 'COMPLETED' && !b.review && (
-        <Button className="h-11" onClick={() => setDialog('review')}>
+        <Button size="lg" onClick={() => setDialog('review')}>
           <Star />
           Rate your astrologer
         </Button>
       )}
       {canCancel && (
-        <Button variant="ghost" className="h-11 text-destructive" onClick={() => setDialog('cancel')}>
+        <Button variant="ghost" size="lg" className="text-danger-text" onClick={() => setDialog('cancel')}>
           Cancel booking
         </Button>
       )}
@@ -343,21 +420,21 @@ function AstrologerActions({ booking: b }: { booking: Booking }) {
     <div className="flex flex-col gap-2 pt-1">
       {canAccept && (
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" className="h-11" onClick={() => setDialog('reject')}>
+          <Button variant="outline" size="lg" onClick={() => setDialog('reject')}>
             Decline
           </Button>
-          <Button className="h-11" onClick={() => setDialog('accept')}>
+          <Button size="lg" onClick={() => setDialog('accept')}>
             Accept
           </Button>
         </div>
       )}
       {b.status === 'LIVE' && (
-        <Button className="h-11" onClick={() => setDialog('markDone')}>
+        <Button size="lg" onClick={() => setDialog('markDone')}>
           Mark pooja as done
         </Button>
       )}
       {(b.status === 'CONFIRMED' || b.status === 'LIVE') && (
-        <Button variant="ghost" className="h-11 text-destructive" onClick={() => setDialog('cancel')}>
+        <Button variant="ghost" size="lg" className="text-danger-text" onClick={() => setDialog('cancel')}>
           Cancel booking
         </Button>
       )}

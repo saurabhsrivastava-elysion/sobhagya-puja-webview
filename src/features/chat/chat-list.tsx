@@ -22,14 +22,15 @@ export function ChatList({ role }: { role: 'user' | 'astrologer' }) {
     queryKey: pujaKeys.threads(),
     queryFn: ({ pageParam }) => api.listThreads(pageParam, PAGE),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => (last.length < PAGE ? undefined : (last[last.length - 1]?.updatedAt ?? undefined)),
+    getNextPageParam: (last) =>
+      last.length < PAGE ? undefined : (last[last.length - 1]?.updatedAt ?? undefined),
   });
   const items = threads.data?.pages.flat() ?? [];
 
   return (
     <NavPage>
       <PageHeader title="Chats" subtitle="Your pooja chats" />
-      <div className="flex flex-col gap-2 p-3">
+      <div className="flex flex-col gap-2.5 p-4">
         {threads.isPending ? (
           <ListSkeleton />
         ) : threads.isError ? (
@@ -66,24 +67,39 @@ function ChatRow({ thread: t, role }: { thread: Thread; role: 'user' | 'astrolog
     <Link
       to="/chat/$bookingId"
       params={{ bookingId: t.bookingId }}
-      className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors active:bg-accent"
+      className={cn(
+        'flex items-center gap-3 surface p-3.5 transition-transform duration-150 active:scale-[0.99] active:bg-muted/40',
+        unread > 0 && 'border-primary-tint bg-primary-soft/40',
+      )}
     >
-      <PersonAvatar name={name} src={avatar} className="size-12" />
+      <PersonAvatar name={name} src={avatar} className="size-13 shrink-0" />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
-          <p className="truncate font-medium">{name || (role === 'user' ? 'Astrologer' : 'User')}</p>
-          <span className={cn('shrink-0 text-[11px]', unread > 0 ? 'text-primary' : 'text-muted-foreground')}>
+          <p className="truncate text-[15px] font-semibold">
+            {name || (role === 'user' ? 'Astrologer' : 'User')}
+          </p>
+          <span
+            className={cn(
+              'shrink-0 text-xs',
+              unread > 0 ? 'font-semibold text-primary-strong' : 'text-muted-foreground',
+            )}
+          >
             {lastActivity(t.updatedAt)}
           </span>
         </div>
-        <p className="truncate text-xs text-muted-foreground">{t.pujaName || 'Pooja'}</p>
+        <p className="truncate text-xs font-medium text-primary-strong">{t.pujaName || 'Pooja'}</p>
         <div className="mt-0.5 flex items-center justify-between gap-2">
-          <p className={cn('truncate text-sm', unread > 0 ? 'font-medium text-foreground' : 'text-muted-foreground')}>
+          <p
+            className={cn(
+              'truncate text-sm',
+              unread > 0 ? 'font-semibold text-foreground' : 'text-muted-foreground',
+            )}
+          >
             {!t.writable && <Lock className="mr-1 inline size-3 align-[-1px]" />}
             {t.lastMessage || 'No messages yet'}
           </p>
           {unread > 0 && (
-            <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
+            <span className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">
               {unread > 99 ? '99+' : unread}
             </span>
           )}

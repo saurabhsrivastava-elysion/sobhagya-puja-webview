@@ -19,7 +19,15 @@ function toDate(value: string): Date | undefined {
  * Date of birth chosen from a calendar (no typing), with month and year dropdowns so a date decades back
  * is two taps away. Future dates cannot be picked. `value` and `onChange` use DD/MM/YYYY, '' when unset.
  */
-export function DobPicker({ value, onChange, id }: { value: string; onChange: (value: string) => void; id?: string }) {
+export function DobPicker({
+  value,
+  onChange,
+  id,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  id?: string;
+}) {
   const [open, setOpen] = useState(false);
   const selected = toDate(value);
   const today = new Date();
@@ -31,7 +39,10 @@ export function DobPicker({ value, onChange, id }: { value: string; onChange: (v
           id={id}
           type="button"
           variant="outline"
-          className={cn('h-9 w-full justify-between px-3 font-normal', !selected && 'text-muted-foreground')}
+          className={cn(
+            'h-11 w-full justify-between px-3 text-[15px] font-normal',
+            !selected && 'text-muted-foreground',
+          )}
         >
           {selected ? format(selected, DOB_FORMAT) : 'DD/MM/YYYY'}
           <CalendarIcon className="size-4 opacity-60" />

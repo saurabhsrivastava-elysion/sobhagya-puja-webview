@@ -45,10 +45,20 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-tint: var(--primary-tint);
+  --color-brand: var(--brand);
+  --color-free: var(--free);
+  --color-free-text: var(--free-text);
+  --color-booked: var(--booked);
+  --color-booked-text: var(--booked-text);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --shadow-card: var(--shadow-card);
+  --shadow-float: var(--shadow-float);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -59,63 +69,78 @@
 }
 
 /*
- * Design tokens. Every colour used by components comes from here.
- * --primary is the single brand accent; swap it to rebrand.
+ * Design tokens, matched to the Sobhagya app. Every colour used by components comes from here.
+ * --primary is the app's Material orange; swap it to rebrand.
  */
 :root {
   /* Self-hosted fonts (next/font did this before). */
   --font-inter: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-geist-mono: 'Geist Mono Variable', ui-monospace, monospace;
-  --radius: 0.5rem;
+  --radius: 0.625rem;
 
-  --background: #f7f8fa;
-  --foreground: #1f2329;
+  --background: #ffffff;
+  --foreground: #1e1b3a;
   --card: #ffffff;
-  --card-foreground: #1f2329;
+  --card-foreground: #1e1b3a;
   --popover: #ffffff;
-  --popover-foreground: #1f2329;
-  --elevated: #f2f3f5;
+  --popover-foreground: #1e1b3a;
+  --elevated: #f5f5f8;
 
-  --primary: #ffa116;
-  --primary-foreground: #1a1a1a;
-  --secondary: #f2f3f5;
-  --secondary-foreground: #1f2329;
-  --muted: #f2f3f5;
-  --muted-foreground: #6b7280;
-  --accent: #f2f3f5;
-  --accent-foreground: #1f2329;
+  --primary: #ff9800; /* app buttons, active tab, toggles */
+  --primary-foreground: #ffffff;
+  --primary-strong: #ef6c00; /* pressed buttons, orange text on white */
+  --primary-soft: #fff4e5; /* selected chips, tinted surfaces */
+  --primary-tint: #ffcc80; /* borders on tinted surfaces (app toggle track) */
+  --brand: #b3402a; /* "Namastey" maroon, used sparingly */
 
-  --success: #00b8a3;
-  --warning: #ffc01e;
-  --destructive: #ff375f;
+  --secondary: #f5f5f8;
+  --secondary-foreground: #1e1b3a;
+  --muted: #f5f5f8;
+  --muted-foreground: #6b6a80;
+  --accent: #fff4e5;
+  --accent-foreground: #1e1b3a;
+
+  --success: #00a693;
+  --warning: #ffb300;
+  --destructive: #e53935;
   --info: #3b82f6;
 
   /* Readable text colours for tinted badges */
-  --success-text: #00806f;
+  --success-text: #00796b;
   --warning-text: #a15c00;
-  --danger-text: #d91a43;
+  --danger-text: #c62828;
   --info-text: #1d4ed8;
 
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #ffa116;
+  /* Availability: free time vs booked poojas */
+  --free: #e7f6f3;
+  --free-text: #00695c;
+  --booked: #fff4e5;
+  --booked-text: #b45309;
 
-  --chart-1: #c97400; /* accent step validated for marks on light surfaces */
-  --chart-2: #00b8a3;
+  --border: #ededf3;
+  --input: #e3e3eb;
+  --ring: #ff9800;
+
+  --shadow-card: 0 1px 2px rgb(30 27 58 / 0.04), 0 2px 12px rgb(30 27 58 / 0.06);
+  --shadow-float: 0 -4px 20px rgb(30 27 58 / 0.08);
+
+  --chart-1: #ef6c00;
+  --chart-2: #00a693;
   --chart-3: #3b82f6;
-  --chart-4: #ff375f;
+  --chart-4: #e53935;
   --chart-5: #a855f7;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #1f2329;
-  --sidebar-primary: #ffa116;
-  --sidebar-primary-foreground: #1a1a1a;
-  --sidebar-accent: #f2f3f5;
-  --sidebar-accent-foreground: #1f2329;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #ffa116;
+  --sidebar-foreground: #1e1b3a;
+  --sidebar-primary: #ff9800;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5f5f8;
+  --sidebar-accent-foreground: #1e1b3a;
+  --sidebar-border: #ededf3;
+  --sidebar-ring: #ff9800;
 }
 
+/* The WebView is forced light ("color-scheme: light only"); this is kept only so .dark never breaks. */
 .dark {
   --background: #1a1a1a;
   --foreground: #eff1f6;
@@ -125,18 +150,22 @@
   --popover-foreground: #eff1f6;
   --elevated: #303030;
 
-  --primary: #ffa116;
-  --primary-foreground: #1a1a1a;
+  --primary: #ff9800;
+  --primary-foreground: #ffffff;
+  --primary-strong: #ffa726;
+  --primary-soft: #3a2a12;
+  --primary-tint: #6b4a16;
+  --brand: #ff8a65;
   --secondary: #303030;
   --secondary-foreground: #eff1f6;
   --muted: #303030;
   --muted-foreground: #9ca3af;
-  --accent: #333333;
+  --accent: #3a2a12;
   --accent-foreground: #eff1f6;
 
   --success: #00b8a3;
   --warning: #ffc01e;
-  --destructive: #ff375f;
+  --destructive: #ff5252;
   --info: #60a5fa;
 
   --success-text: #2cd3bf;
@@ -144,24 +173,32 @@
   --danger-text: #ff6b87;
   --info-text: #93c5fd;
 
+  --free: #12332e;
+  --free-text: #4dd0c0;
+  --booked: #3a2a12;
+  --booked-text: #ffb74d;
+
   --border: #3a3a3a;
   --input: #3a3a3a;
-  --ring: #ffa116;
+  --ring: #ff9800;
 
-  --chart-1: #d07a00; /* accent step validated for marks on dark surfaces */
+  --shadow-card: none;
+  --shadow-float: none;
+
+  --chart-1: #ffa726;
   --chart-2: #00b8a3;
   --chart-3: #60a5fa;
-  --chart-4: #ff375f;
+  --chart-4: #ff5252;
   --chart-5: #c084fc;
 
   --sidebar: #212121;
   --sidebar-foreground: #eff1f6;
-  --sidebar-primary: #ffa116;
-  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-primary: #ff9800;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #303030;
   --sidebar-accent-foreground: #eff1f6;
   --sidebar-border: #3a3a3a;
-  --sidebar-ring: #ffa116;
+  --sidebar-ring: #ff9800;
 }
 
 @layer base {
@@ -173,9 +210,25 @@
   }
   body {
     @apply bg-background text-sm text-foreground antialiased;
+    -webkit-tap-highlight-color: transparent;
   }
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* A card surface: white, soft shadow, hairline border. Used by every list item and panel. */
+@utility surface {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 1.4);
+  box-shadow: var(--shadow-card);
 }

@@ -172,6 +172,8 @@ export const bookingSchema = z.looseObject({
   slotEnd: isoDate,
   userDetails: z.looseObject({ name: str, gotra: str, dateOfBirth: str, sankalp: str }).nullish(),
   amount: numberish,
+  /** Astrologer only: what they get after Sobhagya's commission (absent for the user). */
+  astrologerEarning: numberish.optional(),
   acceptDeadline: isoDate,
   acceptedAt: isoDate,
   liveAt: isoDate,
@@ -315,5 +317,13 @@ export const callStartSchema = z.looseObject({
   callExpiresAt: isoDate,
 });
 export type CallStart = z.infer<typeof callStartSchema>;
+
+/** calling-service `GET /call/puja/:bookingId/call-time`: voice-call talk time of a booking. */
+export const callTimeSchema = z.looseObject({
+  limitSeconds: numberish,
+  usedSeconds: numberish,
+  remainingSeconds: numberish,
+});
+export type CallTime = z.infer<typeof callTimeSchema>;
 
 export const envelope = apiEnvelope;

@@ -39,7 +39,10 @@ export function GotraPicker({ value, onChange }: { value: string; onChange: (val
           <Button
             type="button"
             variant="outline"
-            className={cn('h-9 w-full justify-between px-3 font-normal', !label && 'text-muted-foreground')}
+            className={cn(
+              'h-11 w-full justify-between px-3 text-[15px] font-normal',
+              !label && 'text-muted-foreground',
+            )}
           >
             <span className="truncate">{label || 'Select'}</span>
             <ChevronDown className="size-4 opacity-60" />
@@ -67,7 +70,9 @@ export function GotraPicker({ value, onChange }: { value: string; onChange: (val
                 {g.name}
               </Option>
             ))}
-            {matches.length === 0 && <p className="px-2 py-3 text-center text-xs text-muted-foreground">Not in the list</p>}
+            {matches.length === 0 && (
+              <p className="px-2 py-3 text-center text-xs text-muted-foreground">Not in the list</p>
+            )}
             <Option selected={other} onSelect={() => choose('', true)}>
               Other (type it)
             </Option>
@@ -85,20 +90,28 @@ export function GotraPicker({ value, onChange }: { value: string; onChange: (val
         />
       )}
       {value === UNKNOWN_GOTRA_VALUE && (
-        <p className="text-[11px] text-muted-foreground">The pooja will be performed in Kashyap gotra.</p>
+        <p className="text-xs text-muted-foreground">The pooja will be performed in Kashyap gotra.</p>
       )}
     </div>
   );
 }
 
-function Option({ selected, onSelect, children }: { selected: boolean; onSelect: () => void; children: React.ReactNode }) {
+function Option({
+  selected,
+  onSelect,
+  children,
+}: {
+  selected: boolean;
+  onSelect: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
       role="option"
       aria-selected={selected}
       onClick={onSelect}
-      className="flex w-full items-center justify-between rounded-md px-2 py-2 text-left text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+      className="flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left text-sm focus-visible:bg-accent focus-visible:outline-none active:bg-accent"
     >
       {children}
       {selected && <Check className="size-4 text-primary" />}

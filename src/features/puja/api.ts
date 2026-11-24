@@ -8,6 +8,7 @@ import {
   bookingSchema,
   calendarSchema,
   callStartSchema,
+  callTimeSchema,
   catalogueItemSchema,
   categorySchema,
   emptyPage,
@@ -264,4 +265,13 @@ export async function startPujaCall(bookingId: string, channel: string, callType
     schema: apiEnvelope(callStartSchema),
   });
   return required(res.data, 'call details');
+}
+
+/** Voice-call talk time left for a booking (video calls are not limited by it). */
+export async function getPujaCallTime(bookingId: string) {
+  const res = await http(`/api/call/puja/${encodeURIComponent(bookingId)}/call-time`, {
+    service: 'calling',
+    schema: apiEnvelope(callTimeSchema),
+  });
+  return required(res.data, 'call time');
 }
